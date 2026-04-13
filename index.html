@@ -10,15 +10,48 @@
 
 <h1 class="text-2xl font-bold mb-4">PlusPica</h1>
 
+<div id="villaCard" class="mb-6"></div>
 <div id="villaButtons" class="flex gap-3 mb-6"></div>
 <div id="calendar" class="grid md:grid-cols-2 gap-4"></div>
 
 <script>
 const villas = [
-  { id: 1, name: "Villa Aden" },
-  { id: 2, name: "Villa Lara" },
-  { id: 3, name: "Villa Mira" },
-  { id: 4, name: "Villa Nera" },
+  {
+    id: 1,
+    name: "Villa Rüya-3",
+    image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/Rüya-3.jpg",
+    price: 9000,
+    location: "Kalkan - Kördere",
+    description: "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
+    capacity: "4-8 kişi"
+  },
+  {
+    id: 2,
+    name: "Villa Rüya-4",
+    image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/Rüya-4.jpg",
+    price: 9000,
+    location: "Kalkan - Kördere",
+    description: "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
+    capacity: "4-8 kişi"
+  },
+  {
+    id: 3,
+    name: "Villa Rüya-1",
+    image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/Rüya-1.jpg",
+    price: 8000,
+    location: "Kalkan - İslamlar",
+    description: "4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası",
+    capacity: "4-8 kişi"
+  },
+  {
+    id: 4,
+    name: "Villa Rüya-2",
+    image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/Rüya-2.jpg",
+    price: 8000,
+    location: "Kalkan - İslamlar",
+    description: "4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası",
+    capacity: "4-8 kişi"
+  },
 ];
 
 let selectedVilla = villas[0];
@@ -68,7 +101,7 @@ function buildMonth(year,month){
 
     const isCurrent=date.getMonth()===month;
     const status=item?.status||"musait";
-    const price=item?.price||5000;
+    const price=item?.price||selectedVilla.price||5000;
 
     let style="bg-gray-100";
     if(isCurrent){
@@ -89,6 +122,20 @@ function buildMonth(year,month){
 }
 
 function render(){
+  const card=document.getElementById("villaCard");
+  card.innerHTML=`
+    <div class="bg-white rounded-2xl shadow overflow-hidden">
+      <img src="${selectedVilla.image}" class="w-full h-64 object-cover" />
+      <div class="p-4">
+        <div class="text-xl font-bold">${selectedVilla.name}</div>
+        <div class="text-gray-500">${selectedVilla.location||""}</div>
+        <div class="text-sm text-gray-600 mt-1">${selectedVilla.description||""}</div>
+        <div class="text-sm text-gray-500 mt-1">Kapasite: ${selectedVilla.capacity||""}</div>
+        <div class="mt-2 font-semibold">${formatPrice(selectedVilla.price||5000)} / gece</div>
+      </div>
+    </div>
+  `;
+
   const vb=document.getElementById("villaButtons");
   vb.innerHTML="";
 
@@ -103,8 +150,6 @@ function render(){
   const cal=document.getElementById("calendar");
   cal.innerHTML = buildMonth(2026,3)+buildMonth(2026,4);
 }
-  
-  
 
 render();
 </script>

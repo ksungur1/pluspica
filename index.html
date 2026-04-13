@@ -2,202 +2,213 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>pluspıca</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlusPica</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-[#11296b] text-white">
 
-<body class="bg-gradient-to-br from-[#0f172a] to-[#1e3a8a] text-gray-900">
+  <div class="max-w-7xl mx-auto px-6 py-10">
 
-<div class="max-w-7xl mx-auto p-6 md:p-8">
+    <!-- Logo Alanı -->
+    <div class="text-center mb-12">
+      <img
+        src="logo.png"
+        alt="pluspica logo"
+        class="mx-auto w-[380px] max-w-full drop-shadow-2xl"
+      />
+    </div>
 
-  <!-- LOGO -->
-  <div class="text-center mb-6">
-    <img src="logo.png" 
-         class="mx-auto w-56 drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
-    
-    <h1 class="text-white text-4xl font-bold mt-4">pluspıca</h1>
-    <p class="text-gray-300 mt-1">Günlük ve haftalık kiralık seçili villalar</p>
+    <!-- Villa Kartları -->
+    <div id="villaList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10"></div>
+
+    <!-- Seçili Villa -->
+    <div id="selectedSection"></div>
   </div>
 
-  <!-- VILLA LIST -->
-  <div id="villaList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8"></div>
+  <script>
+    const villas = [
+      {
+        id: 1,
+        name: "Villa Rüya-3",
+        image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-3.jpg",
+        price: 9000,
+        location: "Kalkan - Kördere",
+        description: "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
+        capacity: "4-8 kişi"
+      },
+      {
+        id: 2,
+        name: "Villa Rüya-4",
+        image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-4.jpg",
+        price: 9000,
+        location: "Kalkan - Kördere",
+        description: "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
+        capacity: "4-8 kişi"
+      },
+      {
+        id: 3,
+        name: "Villa Rüya-1",
+        image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-1.jpg",
+        price: 8000,
+        location: "Kalkan - İslamlar",
+        description: "4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası",
+        capacity: "4-8 kişi"
+      },
+      {
+        id: 4,
+        name: "Villa Rüya-2",
+        image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-2.jpg",
+        price: 8000,
+        location: "Kalkan - İslamlar",
+        description: "4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası",
+        capacity: "4-8 kişi"
+      }
+    ];
 
-  <!-- SELECTED -->
-  <div id="selectedSection" class="space-y-6"></div>
+    let selectedVilla = villas[0];
 
-</div>
+    const WHATSAPP = "905339134700";
+    const months = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+    const days = ["Pzt","Sal","Çar","Per","Cum","Cts","Paz"];
 
-<script>
-const villas = [
-  {
-    id: 1,
-    name: "Villa Rüya-3",
-    image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-3.jpg",
-    price: 9000,
-    location: "Kalkan - Kördere",
-    description: "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
-    capacity: "4-8 kişi"
-  },
-  {
-    id: 2,
-    name: "Villa Rüya-4",
-    image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-4.jpg",
-    price: 9000,
-    location: "Kalkan - Kördere",
-    description: "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
-    capacity: "4-8 kişi"
-  },
-  {
-    id: 3,
-    name: "Villa Rüya-1",
-    image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-1.jpg",
-    price: 8000,
-    location: "Kalkan - İslamlar",
-    description: "4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası",
-    capacity: "4-8 kişi"
-  },
-  {
-    id: 4,
-    name: "Villa Rüya-2",
-    image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-2.jpg",
-    price: 8000,
-    location: "Kalkan - İslamlar",
-    description: "4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası",
-    capacity: "4-8 kişi"
-  },
-];
-
-let selectedVilla = villas[0];
-
-const WHATSAPP = "905339134700";
-
-const months = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
-const days = ["Pzt","Sal","Çar","Per","Cum","Cts","Paz"];
-
-const availability = {
-  "2026-04-13": { status: "dolu", price: 4500 },
-  "2026-04-14": { status: "dolu", price: 4500 },
-  "2026-04-15": { status: "dolu", price: 4500 },
-};
-
-function formatPrice(p){ return p + " ₺"; }
-
-function formatDateTR(d){
-  const date = new Date(d);
-  return date.getDate() + " " + months[date.getMonth()];
-}
-
-function openWA(villa,date){
-  const msg = `Merhaba, ${villa} için ${formatDateTR(date)} tarihini sormak istiyorum. Müsait mi?`;
-  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
-}
-
-function buildMonth(year,month){
-  const first = new Date(year,month,1);
-  const last = new Date(year,month+1,0);
-  const start = (first.getDay()+6)%7;
-  const total = Math.ceil((start+last.getDate())/7)*7;
-
-  let html = `<div class='bg-white p-4 rounded-3xl shadow-lg'>`;
-  html += `<h3 class='text-center font-semibold mb-3 text-lg'>${months[month]} ${year}</h3>`;
-  html += `<div class='grid grid-cols-7 text-center text-sm text-gray-500 mb-2'>`;
-  days.forEach(d => html += `<div>${d}</div>`);
-  html += `</div>`;
-  html += `<div class='grid grid-cols-7 gap-2'>`;
-
-  for(let i=0;i<total;i++){
-    const date = new Date(year,month,i-start+1);
-    const iso = date.toISOString().split("T")[0];
-    const item = availability[iso];
-
-    const isCurrent = date.getMonth()===month;
-    const status = item?.status || "musait";
-    const price = item?.price || selectedVilla.price;
-
-    let style = "bg-gray-100";
-    if(isCurrent){
-      style = status === "dolu" ? "bg-emerald-200" : "bg-blue-200";
-    }
-
-    const disabled = status === "dolu";
-
-    html += `<button onclick="${!disabled ? `openWA('${selectedVilla.name}','${iso}')` : ""}"
-      class="p-2 rounded-xl text-xs ${style} ${disabled ? "opacity-50" : "hover:scale-105 transition"}">
-      <div class='font-bold'>${date.getDate()}</div>
-      <div>${formatPrice(price)}</div>
-    </button>`;
-  }
-
-  html += `</div></div>`;
-  return html;
-}
-
-function renderVillaList(){
-  const list = document.getElementById("villaList");
-  list.innerHTML = "";
-
-  villas.forEach(v => {
-    const card = document.createElement("button");
-    card.className = "bg-white rounded-3xl shadow-lg overflow-hidden text-left hover:-translate-y-1 transition";
-
-    card.onclick = () => {
-      selectedVilla = v;
-      render();
-      document.getElementById("selectedSection").scrollIntoView({ behavior: "smooth" });
+    const availability = {
+      "2026-04-13": { status: "dolu", price: 4500 },
+      "2026-04-14": { status: "dolu", price: 4500 },
+      "2026-04-15": { status: "dolu", price: 4500 }
     };
 
-    card.innerHTML = `
-      <img src="${v.image}" class="w-full h-52 object-cover">
-      <div class="p-4">
-        <div class="flex justify-between">
-          <div>
-            <div class="text-lg font-semibold">${v.name}</div>
-            <div class="text-sm text-gray-500">${v.location}</div>
+    function formatPrice(p) {
+      return p + " ₺";
+    }
+
+    function formatDateTR(d) {
+      const date = new Date(d);
+      return date.getDate() + " " + months[date.getMonth()];
+    }
+
+    function openWA(villa, date) {
+      const msg = `Merhaba, ${villa} için ${formatDateTR(date)} tarihini sormak istiyorum. Müsait mi?`;
+      window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
+    }
+
+    function buildMonth(year, month) {
+      const first = new Date(year, month, 1);
+      const last = new Date(year, month + 1, 0);
+      const start = (first.getDay() + 6) % 7;
+      const total = Math.ceil((start + last.getDate()) / 7) * 7;
+
+      let html = `<div class="bg-white text-slate-900 rounded-[28px] p-4 shadow-lg">`;
+      html += `<h3 class="text-center font-semibold text-lg mb-3">${months[month]} ${year}</h3>`;
+      html += `<div class="grid grid-cols-7 text-center text-sm text-slate-500 mb-2">`;
+      days.forEach(d => html += `<div>${d}</div>`);
+      html += `</div>`;
+      html += `<div class="grid grid-cols-7 gap-2">`;
+
+      for (let i = 0; i < total; i++) {
+        const date = new Date(year, month, i - start + 1);
+        const iso = date.toISOString().split("T")[0];
+        const item = availability[iso];
+
+        const isCurrent = date.getMonth() === month;
+        const status = item?.status || "musait";
+        const price = item?.price || selectedVilla.price || 5000;
+
+        let style = "bg-slate-100 text-slate-400";
+        if (isCurrent) {
+          style = status === "dolu"
+            ? "bg-emerald-200 text-emerald-900"
+            : "bg-blue-200 text-blue-900";
+        }
+
+        const disabled = status === "dolu";
+
+        html += `
+          <button
+            onclick="${!disabled ? `openWA('${selectedVilla.name}','${iso}')` : ""}"
+            class="rounded-xl p-2 text-xs ${style} ${disabled ? "opacity-60 cursor-not-allowed" : "hover:scale-105 transition"}"
+          >
+            <div class="font-bold">${date.getDate()}</div>
+            <div>${formatPrice(price)}</div>
+          </button>
+        `;
+      }
+
+      html += `</div></div>`;
+      return html;
+    }
+
+    function renderVillaList() {
+      const list = document.getElementById("villaList");
+      list.innerHTML = "";
+
+      villas.forEach(v => {
+        const card = document.createElement("button");
+        card.className = `
+          bg-white text-slate-900 rounded-[28px] overflow-hidden shadow-lg text-left
+          transition hover:-translate-y-1 border-2
+          ${selectedVilla.id === v.id ? "border-white/90" : "border-transparent"}
+        `;
+
+        card.onclick = () => {
+          selectedVilla = v;
+          render();
+          document.getElementById("selectedSection").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        };
+
+        card.innerHTML = `
+          <img src="${v.image}" class="w-full h-56 object-cover" />
+          <div class="p-5">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-2xl font-semibold leading-tight">${v.name}</div>
+                <div class="text-sm text-slate-500 mt-2">${v.location}</div>
+              </div>
+              <div class="text-xl font-semibold whitespace-nowrap">${formatPrice(v.price)}</div>
+            </div>
+            <div class="text-sm text-slate-600 mt-4 leading-7">${v.description}</div>
+            <div class="text-sm text-slate-500 mt-3">Kapasite: ${v.capacity}</div>
           </div>
-          <div class="text-sm font-semibold">${formatPrice(v.price)}</div>
-        </div>
-        <div class="text-sm text-gray-600 mt-2">${v.description}</div>
-        <div class="text-sm text-gray-500 mt-1">Kapasite: ${v.capacity}</div>
-      </div>
-    `;
-    list.appendChild(card);
-  });
-}
+        `;
 
-function renderSelected(){
-  const section = document.getElementById("selectedSection");
+        list.appendChild(card);
+      });
+    }
 
-  section.innerHTML = `
-    <div class="bg-white rounded-3xl shadow-lg overflow-hidden">
-      <img src="${selectedVilla.image}" class="w-full h-80 object-cover">
-      <div class="p-5">
-        <div class="flex justify-between">
-          <div>
-            <h2 class="text-2xl font-bold">${selectedVilla.name}</h2>
-            <p class="text-gray-500">${selectedVilla.location}</p>
-            <p class="mt-2 text-gray-600">${selectedVilla.description}</p>
-            <p class="text-gray-500">Kapasite: ${selectedVilla.capacity}</p>
+    function renderSelectedSection() {
+      const section = document.getElementById("selectedSection");
+      section.innerHTML = `
+        <div class="bg-white text-slate-900 rounded-[32px] overflow-hidden shadow-xl mb-8">
+          <img src="${selectedVilla.image}" class="w-full h-72 md:h-[420px] object-cover" />
+          <div class="p-6 md:p-8">
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
+              <div>
+                <h2 class="text-3xl md:text-4xl font-bold">${selectedVilla.name}</h2>
+                <div class="mt-3 text-slate-500">${selectedVilla.location}</div>
+                <div class="mt-4 text-slate-700 leading-7">${selectedVilla.description}</div>
+                <div class="mt-3 text-slate-500">Kapasite: ${selectedVilla.capacity}</div>
+              </div>
+              <div class="text-2xl font-semibold whitespace-nowrap">${formatPrice(selectedVilla.price)} / gece</div>
+            </div>
           </div>
-          <div class="text-xl font-semibold">${formatPrice(selectedVilla.price)}</div>
         </div>
-      </div>
-    </div>
 
-    <div class="grid md:grid-cols-2 gap-5">
-      ${buildMonth(2026,3)}
-      ${buildMonth(2026,4)}
-    </div>
-  `;
-}
+        <div class="grid md:grid-cols-2 gap-6">
+          ${buildMonth(2026, 3)}
+          ${buildMonth(2026, 4)}
+        </div>
+      `;
+    }
 
-function render(){
-  renderVillaList();
-  renderSelected();
-}
+    function render() {
+      renderVillaList();
+      renderSelectedSection();
+    }
 
-render();
-</script>
-
+    render();
+  </script>
 </body>
 </html>

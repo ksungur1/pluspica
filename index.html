@@ -2,157 +2,103 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PlusPica</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-[#11296b] text-white">
-<body class="bg-[#1e3470] relative">
-<body class="w-[220px] opacity-100 transition duration-300 hover:scale-105 drop-shadow-[0_0_15px_rgba(255,255,255,0.35)]"
-  <div class="max-w-7xl mx-auto px-6 py-10">
+<body class="bg-[#1e3470] font-sans">
 
-    <!-- LOGO -->
-<div class="absolute top-6 left-8 z-50">
-  <img 
-    src="logo.png"
-    class="w-[260px] brightness-0 invert drop-shadow-[0_0_20px_rgba(255,255,255,0.6)]"
-  />
-</div>
-
-    <!-- VILLA KARTLARI -->
-    <div id="villaList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10"></div>
-
-    <!-- SEÇİLİ VİLLA -->
-    <div id="selectedSection"></div>
-
+  <!-- BAŞLIK -->
+  <div class="text-center mt-12 mb-10 px-4">
+    <h1 class="text-white text-3xl md:text-4xl font-semibold">
+      Kalkan’da Seçili Lüks Villalar
+    </h1>
+    <p class="text-white/70 mt-3">
+      Günlük ve haftalık kiralama seçenekleri
+    </p>
   </div>
 
-  <script>
-    const villas = [
-      {
-        id: 1,
-        name: "Villa Rüya-3",
-        image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-3.jpg",
-        price: 9000,
-        location: "Kalkan - Kördere",
-        description: "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
-        capacity: "4-8 kişi"
-      },
-      {
-        id: 2,
-        name: "Villa Rüya-4",
-        image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-4.jpg",
-        price: 9000,
-        location: "Kalkan - Kördere",
-        description: "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
-        capacity: "4-8 kişi"
-      },
-      {
-        id: 3,
-        name: "Villa Rüya-1",
-        image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-1.jpg",
-        price: 8000,
-        location: "Kalkan - İslamlar",
-        description: "4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası",
-        capacity: "4-8 kişi"
-      },
-      {
-        id: 4,
-        name: "Villa Rüya-2",
-        image: "https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-2.jpg",
-        price: 8000,
-        location: "Kalkan - İslamlar",
-        description: "4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası",
-        capacity: "4-8 kişi"
-      }
-    ];
+  <!-- VİLLA KARTLARI -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-6 pb-20">
 
-    let selectedVilla = villas[0];
+    <!-- VILLA RÜYA 3 (LOGO BURADA) -->
+    <div class="bg-white rounded-2xl overflow-hidden shadow-lg">
 
-    const WHATSAPP = "905339134700";
+      <div class="relative">
+        <img src="https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-3.jpg" class="w-full h-[220px] object-cover"/>
 
-    function formatPrice(p) {
-      return p + " ₺";
-    }
-
-    function openWA(villa) {
-      const msg = `Merhaba, ${villa} için bilgi almak istiyorum.`;
-      window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
-    }
-
-    function renderVillaList() {
-      const list = document.getElementById("villaList");
-      list.innerHTML = "";
-
-      villas.forEach(v => {
-        const card = document.createElement("button");
-
-        card.className = `
-          bg-white text-slate-900 rounded-[28px] overflow-hidden shadow-lg text-left
-          transition hover:-translate-y-1
-        `;
-
-        card.onclick = () => {
-          selectedVilla = v;
-          render();
-          document.getElementById("selectedSection").scrollIntoView({
-            behavior: "smooth"
-          });
-        };
-
-        card.innerHTML = `
-          <img src="${v.image}" class="w-full h-56 object-cover" />
-          <div class="p-5">
-            <div class="flex justify-between">
-              <div class="text-xl font-semibold">${v.name}</div>
-              <div class="font-semibold">${formatPrice(v.price)}</div>
-            </div>
-            <div class="text-sm text-slate-500 mt-2">${v.location}</div>
-            <div class="text-sm text-slate-600 mt-3">${v.description}</div>
-            <div class="text-sm text-slate-500 mt-2">Kapasite: ${v.capacity}</div>
-          </div>
-        `;
-
-        list.appendChild(card);
-      });
-    }
-
-    function renderSelectedSection() {
-      const section = document.getElementById("selectedSection");
-
-      section.innerHTML = `
-        <div class="bg-white text-slate-900 rounded-[32px] overflow-hidden shadow-xl mb-10">
-          <img src="${selectedVilla.image}" class="w-full h-80 object-cover" />
-
-          <div class="p-6">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-3xl font-bold">${selectedVilla.name}</h2>
-                <div class="text-slate-500 mt-2">${selectedVilla.location}</div>
-              </div>
-              <div class="text-xl font-semibold">${formatPrice(selectedVilla.price)} / gece</div>
-            </div>
-
-            <p class="mt-4 text-slate-700">${selectedVilla.description}</p>
-            <div class="mt-2 text-slate-500">Kapasite: ${selectedVilla.capacity}</div>
-
-            <button onclick="openWA('${selectedVilla.name}')"
-              class="mt-6 bg-green-500 text-white px-6 py-3 rounded-xl hover:bg-green-600 transition">
-              WhatsApp ile Sor
-            </button>
-          </div>
+        <!-- LOGO OVERLAY -->
+        <div class="absolute inset-0 flex items-center justify-center">
+          <img 
+            src="logo.png"
+            class="w-[180px] opacity-90 drop-shadow-[0_0_20px_rgba(255,255,255,0.8)]"
+          />
         </div>
-      `;
-    }
+      </div>
 
-    function render() {
-      renderVillaList();
-      renderSelectedSection();
-    }
+      <div class="p-4">
+        <div class="flex justify-between items-center">
+          <h2 class="font-semibold text-lg">Villa Rüya-3</h2>
+          <span class="font-semibold">9000 ₺</span>
+        </div>
+        <p class="text-sm text-gray-500">Kalkan - Kördere</p>
+        <p class="text-sm mt-2">
+          4 yatak odası, her odada banyo, özel havuz ve deniz manzarası
+        </p>
+        <p class="text-sm mt-2 text-gray-500">Kapasite: 4-8 kişi</p>
+      </div>
+    </div>
 
-    render();
-  </script>
+    <!-- VILLA RÜYA 4 -->
+    <div class="bg-white rounded-2xl overflow-hidden shadow-lg">
+      <img src="https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-4.jpg" class="w-full h-[220px] object-cover"/>
+      <div class="p-4">
+        <div class="flex justify-between items-center">
+          <h2 class="font-semibold text-lg">Villa Rüya-4</h2>
+          <span class="font-semibold">9000 ₺</span>
+        </div>
+        <p class="text-sm text-gray-500">Kalkan - Kördere</p>
+        <p class="text-sm mt-2">
+          4 yatak odası, her odada banyo, özel havuz ve deniz manzarası
+        </p>
+        <p class="text-sm mt-2 text-gray-500">Kapasite: 4-8 kişi</p>
+      </div>
+    </div>
+
+    <!-- VILLA RÜYA 1 -->
+    <div class="bg-white rounded-2xl overflow-hidden shadow-lg">
+      <img src="https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-1.jpg" class="w-full h-[220px] object-cover"/>
+      <div class="p-4">
+        <div class="flex justify-between items-center">
+          <h2 class="font-semibold text-lg">Villa Rüya-1</h2>
+          <span class="font-semibold">8000 ₺</span>
+        </div>
+        <p class="text-sm text-gray-500">Kalkan - İslamlar</p>
+        <p class="text-sm mt-2">
+          4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası
+        </p>
+        <p class="text-sm mt-2 text-gray-500">Kapasite: 4-8 kişi</p>
+      </div>
+    </div>
+
+    <!-- VILLA RÜYA 2 -->
+    <div class="bg-white rounded-2xl overflow-hidden shadow-lg">
+      <img src="https://raw.githubusercontent.com/ksungur1/pluspica/main/ruya-2.jpg" class="w-full h-[220px] object-cover"/>
+      <div class="p-4">
+        <div class="flex justify-between items-center">
+          <h2 class="font-semibold text-lg">Villa Rüya-2</h2>
+          <span class="font-semibold">8000 ₺</span>
+        </div>
+        <p class="text-sm text-gray-500">Kalkan - İslamlar</p>
+        <p class="text-sm mt-2">
+          4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası
+        </p>
+        <p class="text-sm mt-2 text-gray-500">Kapasite: 4-8 kişi</p>
+      </div>
+    </div>
+
+  </div>
 
 </body>
 </html>

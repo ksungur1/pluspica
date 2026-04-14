@@ -2,58 +2,54 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PlusPica</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  
 </head>
 
 <body class="bg-[#1e3470] font-sans text-white">
-
   <div class="max-w-[1500px] mx-auto px-6 py-10">
 
     <!-- BAŞLIK - AYNI KALSIN -->
     <div class="flex items-center justify-center gap-6 mt-10 mb-12 px-4 flex-wrap">
-    
-    <!-- LOGO -->
-    <img 
+      <!-- LOGO -->
+      <img
         src="logo.png"
         class="w-[800px] md:w-[1000px] opacity-95 drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"
         alt="PlusPica Logo"
-    />
+      />
 
-    <!-- YAZI BLOĞU -->
-<div class="text-center mt-8 mb-10 px-4">
-  <h1
-    class="text-white text-5xl md:text-7xl leading-none"
-    style="font-family: 'Cormorant Garamond', serif; font-weight: 600; letter-spacing: 0.5px;"
-  >
-    Kalkan'da Seçili Lüks Villalar
-  </h1>
+      <!-- YAZI BLOĞU -->
+      <div class="text-center mt-8 mb-10 px-4">
+        <h1
+          class="text-white text-5xl md:text-7xl leading-none"
+          style="font-family: 'Cormorant Garamond', serif; font-weight: 600; letter-spacing: 0.5px;"
+        >
+          Kalkan'da Seçili Lüks Villalar
+        </h1>
 
-  <p
-    class="text-white/80 mt-4 text-base md:text-lg"
-    style="font-family: 'Inter', sans-serif; font-weight: 400; letter-spacing: 0.4px;"
-  >
-    Günlük ve haftalık kiralama seçenekleri
-  </p>
-</div>
-
+        <p
+          class="text-white/80 mt-4 text-base md:text-lg"
+          style="font-family: 'Inter', sans-serif; font-weight: 400; letter-spacing: 0.4px;"
+        >
+          Günlük ve haftalık kiralama seçenekleri
+        </p>
+      </div>
+    </div>
 
     <!-- VİLLA KARTLARI -->
     <div id="villaList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12"></div>
 
-    <!-- SEÇİLİ VİLLA DETAY + GALERİ + TAKVİM -->
+    <!-- SEÇİLİ VİLLA -->
     <div id="selectedSection" class="space-y-8"></div>
-
   </div>
 
   <script>
     const WHATSAPP = "905339134700";
 
-    const months = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
-    const days = ["Pzt","Sal","Çar","Per","Cum","Cts","Paz"];
+    const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+    const days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"];
 
     const villas = [
       {
@@ -61,10 +57,7 @@
         name: "Villa Rüya-3",
         cover: "ruya-3.jpg",
         images: [
-          "ruya-3.jpg",
-          "ruya-3-1.jpg",
-          "ruya-3-2.jpg",
-          "ruya-3-3.jpg"
+          "ruya-3.jpg"
         ],
         price: 9000,
         location: "Kalkan - Kördere",
@@ -76,10 +69,7 @@
         name: "Villa Rüya-4",
         cover: "ruya-4.jpg",
         images: [
-          "ruya-4.jpg",
-          "ruya-4-1.jpg",
-          "ruya-4-2.jpg",
-          "ruya-4-3.jpg"
+          "ruya-4.jpg"
         ],
         price: 9000,
         location: "Kalkan - Kördere",
@@ -92,13 +82,13 @@
         cover: "ruya-1.jpg",
         images: [
           "ruya-1.jpg",
-          "ruya-1-1.jpg",
           "ruya-1-2.jpg",
-          "ruya-1-3.jpg"
+          "ruya-1-3.jpg",
+          "ruya-1-4.jpg"
         ],
         price: 8000,
         location: "Kalkan - İslamlar",
-        description: "4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası",
+        description: "4 yatak odası, her odada banyosu bulunmaktadır. Kendine ait havuzu, izole bahçesi ve orman manzarası vardır.",
         capacity: "4-8 kişi"
       },
       {
@@ -107,25 +97,26 @@
         cover: "ruya-2.jpg",
         images: [
           "ruya-2.jpg",
-          "ruya-2-1.jpg",
           "ruya-2-2.jpg",
           "ruya-2-3.jpg"
         ],
         price: 8000,
         location: "Kalkan - İslamlar",
-        description: "4 yatak odası, her odada banyo, özel havuz, izole bahçe ve orman manzarası",
+        description: "4 yatak odası, her odada banyosu bulunmaktadır. Kendine ait havuzu, izole bahçesi ve orman manzarası vardır.",
         capacity: "4-8 kişi"
       }
     ];
 
     let selectedVilla = villas[0];
     let selectedImageIndex = 0;
+    let startDate = null;
+    let endDate = null;
 
     const availabilityByVilla = {
       1: {
-        "2026-04-13": { status: "dolu", price: 9000 },
         "2026-04-14": { status: "dolu", price: 9000 },
-        "2026-04-15": { status: "dolu", price: 9000 }
+        "2026-04-15": { status: "dolu", price: 9000 },
+        "2026-04-16": { status: "dolu", price: 9000 }
       },
       2: {
         "2026-04-20": { status: "dolu", price: 9000 },
@@ -142,59 +133,182 @@
     };
 
     function formatPrice(p) {
-      return p + " ₺";
+      return p.toLocaleString("tr-TR") + " ₺";
     }
 
-    function formatDateTR(d) {
-      const date = new Date(d);
-      return date.getDate() + " " + months[date.getMonth()];
+    function parseISO(iso) {
+      return new Date(iso + "T00:00:00");
     }
 
-    function openWA(villa, date) {
-      const msg = `Merhaba, ${villa} için ${formatDateTR(date)} tarihini sormak istiyorum. Müsait mi?`;
-      window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
+    function formatDateTR(iso) {
+      const d = parseISO(iso);
+      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     }
 
     function getAvailability() {
       return availabilityByVilla[selectedVilla.id] || {};
     }
 
+    function getDateRange(start, end) {
+      const range = [];
+      const current = new Date(start);
+      while (current < end) {
+        range.push(current.toISOString().split("T")[0]);
+        current.setDate(current.getDate() + 1);
+      }
+      return range;
+    }
+
+    function hasBookedDayBetween(startIso, endIso) {
+      const availability = getAvailability();
+      const start = parseISO(startIso);
+      const end = parseISO(endIso);
+
+      const current = new Date(start);
+      current.setDate(current.getDate() + 1);
+
+      while (current < end) {
+        const iso = current.toISOString().split("T")[0];
+        if (availability[iso]?.status === "dolu") return true;
+        current.setDate(current.getDate() + 1);
+      }
+      return false;
+    }
+
+    function isSameDay(a, b) {
+      return a === b;
+    }
+
+    function isInSelectedRange(iso) {
+      if (!startDate || !endDate) return false;
+      return iso > startDate && iso < endDate;
+    }
+
+    function nightsBetween(startIso, endIso) {
+      const ms = parseISO(endIso) - parseISO(startIso);
+      return Math.round(ms / (1000 * 60 * 60 * 24));
+    }
+
+    function resetSelection() {
+      startDate = null;
+      endDate = null;
+    }
+
+    function selectDate(iso) {
+      const availability = getAvailability();
+      if (availability[iso]?.status === "dolu") return;
+
+      if (!startDate || (startDate && endDate)) {
+        startDate = iso;
+        endDate = null;
+        renderSelectedSection();
+        return;
+      }
+
+      if (iso === startDate) {
+        endDate = null;
+        renderSelectedSection();
+        return;
+      }
+
+      if (parseISO(iso) < parseISO(startDate)) {
+        startDate = iso;
+        endDate = null;
+        renderSelectedSection();
+        return;
+      }
+
+      if (hasBookedDayBetween(startDate, iso)) {
+        alert("Seçtiğiniz tarih aralığında dolu gün bulunuyor. Lütfen farklı bir aralık seçin.");
+        return;
+      }
+
+      endDate = iso;
+      renderSelectedSection();
+    }
+
+    function getReservationSummary() {
+      if (!startDate || !endDate) {
+        return `
+          <div class="bg-white text-slate-900 rounded-[28px] p-5 shadow-lg">
+            <div class="text-lg font-semibold mb-2">Rezervasyon Özeti</div>
+            <div class="text-slate-500">Lütfen giriş ve çıkış tarihi seçin.</div>
+          </div>
+        `;
+      }
+
+      const nights = nightsBetween(startDate, endDate);
+      const total = nights * selectedVilla.price;
+      const message = `Merhaba, ${selectedVilla.name} için ${formatDateTR(startDate)} giriş ve ${formatDateTR(endDate)} çıkış olmak üzere ${nights} gecelik rezervasyon hakkında bilgi almak istiyorum. Toplam fiyat: ${formatPrice(total)}.`;
+
+      return `
+        <div class="bg-white text-slate-900 rounded-[28px] p-5 shadow-lg">
+          <div class="text-lg font-semibold mb-4">Rezervasyon Özeti</div>
+          <div class="space-y-2 text-sm md:text-base">
+            <div><span class="font-medium">Giriş:</span> ${formatDateTR(startDate)}</div>
+            <div><span class="font-medium">Çıkış:</span> ${formatDateTR(endDate)}</div>
+            <div><span class="font-medium">Gece:</span> ${nights}</div>
+            <div><span class="font-medium">Toplam Tutar:</span> ${formatPrice(total)}</div>
+          </div>
+
+          <a
+            href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}"
+            target="_blank"
+            class="mt-5 inline-flex items-center justify-center rounded-xl bg-green-500 text-white px-5 py-3 font-medium hover:bg-green-600 transition w-full md:w-fit"
+          >
+            WhatsApp ile Rezervasyon Sor
+          </a>
+        </div>
+      `;
+    }
+
     function buildMonth(year, month) {
       const availability = getAvailability();
       const first = new Date(year, month, 1);
       const last = new Date(year, month + 1, 0);
-      const start = (first.getDay() + 6) % 7;
-      const total = Math.ceil((start + last.getDate()) / 7) * 7;
+      const startOffset = (first.getDay() + 6) % 7;
+      const total = Math.ceil((startOffset + last.getDate()) / 7) * 7;
 
       let html = `<div class="bg-white text-slate-900 rounded-[28px] p-4 shadow-lg">`;
       html += `<h3 class="text-center font-semibold text-lg mb-3">${months[month]} ${year}</h3>`;
       html += `<div class="grid grid-cols-7 text-center text-sm text-slate-500 mb-2">`;
       days.forEach(d => html += `<div>${d}</div>`);
-      html += `</div>`;
-      html += `<div class="grid grid-cols-7 gap-2">`;
+      html += `</div><div class="grid grid-cols-7 gap-2">`;
 
       for (let i = 0; i < total; i++) {
-        const date = new Date(year, month, i - start + 1);
+        const date = new Date(year, month, i - startOffset + 1);
         const iso = date.toISOString().split("T")[0];
         const item = availability[iso];
 
-        const isCurrent = date.getMonth() === month;
-        const status = item?.status || "musait";
+        const isCurrentMonth = date.getMonth() === month;
+        const isBooked = item?.status === "dolu";
+        const isStart = startDate && isSameDay(iso, startDate);
+        const isEnd = endDate && isSameDay(iso, endDate);
+        const isRange = isInSelectedRange(iso);
         const price = item?.price || selectedVilla.price;
 
         let style = "bg-slate-100 text-slate-400";
-        if (isCurrent) {
-          style = status === "dolu"
-            ? "bg-rose-200 text-rose-900"
-            : "bg-blue-200 text-blue-900";
-        }
+        let clickable = "";
 
-        const disabled = status === "dolu";
+        if (isCurrentMonth) {
+          if (isBooked) {
+            style = "bg-rose-100 text-rose-500";
+          } else if (isStart || isEnd) {
+            style = "bg-emerald-500 text-white";
+            clickable = "hover:scale-105";
+          } else if (isRange) {
+            style = "bg-emerald-100 text-emerald-900";
+            clickable = "hover:scale-105";
+          } else {
+            style = "bg-blue-200 text-blue-900";
+            clickable = "hover:scale-105";
+          }
+        }
 
         html += `
           <button
-            onclick="${!disabled ? `openWA('${selectedVilla.name}','${iso}')` : ""}"
-            class="rounded-xl p-2 text-xs ${style} ${disabled ? "opacity-60 cursor-not-allowed" : "hover:scale-105 transition"}"
+            ${isCurrentMonth && !isBooked ? `onclick="selectDate('${iso}')"` : ""}
+            class="rounded-xl p-2 text-xs transition ${style} ${isBooked ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'} ${clickable}"
           >
             <div class="font-bold">${date.getDate()}</div>
             <div>${formatPrice(price)}</div>
@@ -221,6 +335,7 @@
         card.onclick = () => {
           selectedVilla = v;
           selectedImageIndex = 0;
+          resetSelection();
           render();
           document.getElementById("selectedSection").scrollIntoView({
             behavior: "smooth",
@@ -265,7 +380,6 @@
       section.innerHTML = `
         <div class="bg-white text-slate-900 rounded-[32px] overflow-hidden shadow-xl">
           <div class="grid lg:grid-cols-2 gap-0">
-            
             <div class="p-4 md:p-6">
               <img src="${selectedVilla.images[selectedImageIndex]}" class="w-full h-72 md:h-[460px] object-cover rounded-[24px]" />
 
@@ -284,6 +398,10 @@
                 <div class="text-slate-500">Kapasite: ${selectedVilla.capacity}</div>
                 <div class="text-2xl font-semibold">${formatPrice(selectedVilla.price)} / gece</div>
 
+                <div class="text-sm text-slate-500">
+                  Takvimden giriş ve çıkış tarihi seçerek toplam tutarı görebilirsiniz.
+                </div>
+
                 <a
                   href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Merhaba, ${selectedVilla.name} hakkında bilgi almak istiyorum.`)}"
                   target="_blank"
@@ -296,9 +414,14 @@
           </div>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-6">
-          ${buildMonth(2026, 3)}
-          ${buildMonth(2026, 4)}
+        <div class="grid lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1">
+            ${getReservationSummary()}
+          </div>
+          <div class="lg:col-span-2 grid md:grid-cols-2 gap-6">
+            ${buildMonth(2026, 3)}
+            ${buildMonth(2026, 4)}
+          </div>
         </div>
       `;
     }

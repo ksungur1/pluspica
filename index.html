@@ -11,16 +11,13 @@
 <body class="bg-[#1e3470] font-sans text-white">
   <div class="max-w-[1500px] mx-auto px-6 py-10">
 
-    <!-- BAŞLIK - AYNI KALSIN -->
     <div class="flex items-center justify-center gap-6 mt-10 mb-12 px-4 flex-wrap">
-      <!-- LOGO -->
       <img
         src="logo.png"
         class="w-[800px] md:w-[1000px] opacity-95 drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"
         alt="PlusPica Logo"
       />
 
-      <!-- YAZI BLOĞU -->
       <div class="text-center mt-8 mb-10 px-4">
         <h1
           class="text-white text-5xl md:text-7xl leading-none"
@@ -38,102 +35,26 @@
       </div>
     </div>
 
-    <!-- VİLLA KARTLARI -->
-    <div id="villaList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12"></div>
+    <div id="loading" class="text-center text-white/80 py-10">Yükleniyor...</div>
+    <div id="error" class="hidden text-center text-red-200 py-10"></div>
 
-    <!-- SEÇİLİ VİLLA -->
+    <div id="villaList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12"></div>
     <div id="selectedSection" class="space-y-8"></div>
   </div>
 
   <script>
     const WHATSAPP = "905339134700";
-
     const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
     const days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"];
 
-    const villas = [
-      {
-        id: 1,
-        name: "Villa Rüya-3",
-        cover: "ruya-3.jpg",
-        images: [
-          "ruya-3.jpg"
-        ],
-        price: 9000,
-        location: "Kalkan - Kördere",
-        description: "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
-        capacity: "4-8 kişi"
-      },
-      {
-        id: 2,
-        name: "Villa Rüya-4",
-        cover: "ruya-4.jpg",
-        images: [
-          "ruya-4.jpg"
-        ],
-        price: 9000,
-        location: "Kalkan - Kördere",
-        description: "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
-        capacity: "4-8 kişi"
-      },
-      {
-        id: 3,
-        name: "Villa Rüya-1",
-        cover: "ruya-1.jpg",
-        images: [
-          "ruya-1.jpg",
-          "ruya-1-2.jpg",
-          "ruya-1-3.jpg",
-          "ruya-1-4.jpg"
-        ],
-        price: 8000,
-        location: "Kalkan - İslamlar",
-        description: "4 yatak odası, her odada banyosu bulunmaktadır. Kendine ait havuzu, izole bahçesi ve orman manzarası vardır.",
-        capacity: "4-8 kişi"
-      },
-      {
-        id: 4,
-        name: "Villa Rüya-2",
-        cover: "ruya-2.jpg",
-        images: [
-          "ruya-2.jpg",
-          "ruya-2-2.jpg",
-          "ruya-2-3.jpg"
-        ],
-        price: 8000,
-        location: "Kalkan - İslamlar",
-        description: "4 yatak odası, her odada banyosu bulunmaktadır. Kendine ait havuzu, izole bahçesi ve orman manzarası vardır.",
-        capacity: "4-8 kişi"
-      }
-    ];
-
-    let selectedVilla = villas[0];
+    let villas = [];
+    let selectedVilla = null;
     let selectedImageIndex = 0;
     let startDate = null;
     let endDate = null;
 
-    const availabilityByVilla = {
-      1: {
-        "2026-04-14": { status: "dolu", price: 9000 },
-        "2026-04-15": { status: "dolu", price: 9000 },
-        "2026-04-16": { status: "dolu", price: 9000 }
-      },
-      2: {
-        "2026-04-20": { status: "dolu", price: 9000 },
-        "2026-04-21": { status: "dolu", price: 9000 }
-      },
-      3: {
-        "2026-04-10": { status: "dolu", price: 8000 },
-        "2026-04-11": { status: "dolu", price: 8000 }
-      },
-      4: {
-        "2026-04-25": { status: "dolu", price: 8000 },
-        "2026-04-26": { status: "dolu", price: 8000 }
-      }
-    };
-
     function formatPrice(p) {
-      return p.toLocaleString("tr-TR") + " ₺";
+      return Number(p).toLocaleString("tr-TR") + " ₺";
     }
 
     function parseISO(iso) {
@@ -145,22 +66,16 @@
       return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     }
 
-    function getAvailability() {
-      return availabilityByVilla[selectedVilla.id] || {};
-    }
-
-    function getDateRange(start, end) {
-      const range = [];
-      const current = new Date(start);
-      while (current < end) {
-        range.push(current.toISOString().split("T")[0]);
-        current.setDate(current.getDate() + 1);
-      }
-      return range;
+    function getBookedMap(villa) {
+      const map = {};
+      (villa.bookedDates || []).forEach(date => {
+        map[date] = { status: "dolu", price: villa.price };
+      });
+      return map;
     }
 
     function hasBookedDayBetween(startIso, endIso) {
-      const availability = getAvailability();
+      const booked = getBookedMap(selectedVilla);
       const start = parseISO(startIso);
       const end = parseISO(endIso);
 
@@ -169,7 +84,7 @@
 
       while (current < end) {
         const iso = current.toISOString().split("T")[0];
-        if (availability[iso]?.status === "dolu") return true;
+        if (booked[iso]?.status === "dolu") return true;
         current.setDate(current.getDate() + 1);
       }
       return false;
@@ -195,8 +110,8 @@
     }
 
     function selectDate(iso) {
-      const availability = getAvailability();
-      if (availability[iso]?.status === "dolu") return;
+      const booked = getBookedMap(selectedVilla);
+      if (booked[iso]?.status === "dolu") return;
 
       if (!startDate || (startDate && endDate)) {
         startDate = iso;
@@ -263,7 +178,7 @@
     }
 
     function buildMonth(year, month) {
-      const availability = getAvailability();
+      const booked = getBookedMap(selectedVilla);
       const first = new Date(year, month, 1);
       const last = new Date(year, month + 1, 0);
       const startOffset = (first.getDay() + 6) % 7;
@@ -273,19 +188,18 @@
       html += `<h3 class="text-center font-semibold text-lg mb-3">${months[month]} ${year}</h3>`;
       html += `<div class="grid grid-cols-7 text-center text-sm text-slate-500 mb-2">`;
       days.forEach(d => html += `<div>${d}</div>`);
-      html += `</div><div class="grid grid-cols-7 gap-2">`;
+      html += `</div>`;
+      html += `<div class="grid grid-cols-7 gap-2">`;
 
       for (let i = 0; i < total; i++) {
         const date = new Date(year, month, i - startOffset + 1);
         const iso = date.toISOString().split("T")[0];
-        const item = availability[iso];
-
         const isCurrentMonth = date.getMonth() === month;
-        const isBooked = item?.status === "dolu";
+        const isBooked = booked[iso]?.status === "dolu";
         const isStart = startDate && isSameDay(iso, startDate);
         const isEnd = endDate && isSameDay(iso, endDate);
         const isRange = isInSelectedRange(iso);
-        const price = item?.price || selectedVilla.price;
+        const price = selectedVilla.price;
 
         let style = "bg-slate-100 text-slate-400";
         let clickable = "";
@@ -329,7 +243,7 @@
         card.className = `
           bg-white rounded-[28px] overflow-hidden shadow-lg text-left text-slate-900
           transition hover:-translate-y-1 border-2
-          ${selectedVilla.id === v.id ? "border-white/80" : "border-transparent"}
+          ${selectedVilla && selectedVilla.id === v.id ? "border-white/80" : "border-transparent"}
         `;
 
         card.onclick = () => {
@@ -376,6 +290,11 @@
 
     function renderSelectedSection() {
       const section = document.getElementById("selectedSection");
+
+      if (!selectedVilla) {
+        section.innerHTML = "";
+        return;
+      }
 
       section.innerHTML = `
         <div class="bg-white text-slate-900 rounded-[32px] overflow-hidden shadow-xl">
@@ -431,12 +350,39 @@
       renderSelectedSection();
     }
 
+    async function loadVillas() {
+      const loading = document.getElementById("loading");
+      const error = document.getElementById("error");
+
+      try {
+        const response = await fetch("./villas.json", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("villas.json okunamadı.");
+        }
+
+        villas = await response.json();
+
+        if (!Array.isArray(villas) || villas.length === 0) {
+          throw new Error("Villa verisi bulunamadı.");
+        }
+
+        selectedVilla = villas[0];
+        loading.classList.add("hidden");
+        render();
+      } catch (err) {
+        loading.classList.add("hidden");
+        error.classList.remove("hidden");
+        error.textContent = "Veriler yüklenemedi. Dosya adlarını ve villas.json içeriğini kontrol et.";
+        console.error(err);
+      }
+    }
+
     function render() {
       renderVillaList();
       renderSelectedSection();
     }
 
-    render();
+    loadVillas();
   </script>
 </body>
 </html>

@@ -4,13 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PlusPica</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-[#1e3470] font-sans text-white">
   <div class="max-w-[1500px] mx-auto px-6 py-10">
 
+    <!-- BAŞLIK / LOGO BLOĞU - AYNI KALSIN -->
     <div class="flex items-center justify-center gap-6 mt-10 mb-12 px-4 flex-wrap">
       <img
         src="logo.png"
@@ -146,8 +147,29 @@
       if (!startDate || !endDate) {
         return `
           <div class="bg-white text-slate-900 rounded-[28px] p-5 shadow-lg">
-            <div class="text-lg font-semibold mb-2">Rezervasyon Özeti</div>
-            <div class="text-slate-500">Lütfen giriş ve çıkış tarihi seçin.</div>
+            <div class="flex items-center justify-between gap-3 mb-4">
+              <div class="text-lg font-semibold">Rezervasyon Özeti</div>
+              <button
+                onclick="resetSelection(); renderSelectedSection();"
+                class="text-sm text-slate-500 hover:text-slate-700 transition"
+              >
+                Temizle
+              </button>
+            </div>
+
+            <div class="space-y-3 text-sm md:text-base">
+              <div class="rounded-xl bg-slate-50 p-3">
+                <div class="text-slate-500 text-sm">Giriş</div>
+                <div class="font-medium">${startDate ? formatDateTR(startDate) : "Seçilmedi"}</div>
+              </div>
+              <div class="rounded-xl bg-slate-50 p-3">
+                <div class="text-slate-500 text-sm">Çıkış</div>
+                <div class="font-medium">${endDate ? formatDateTR(endDate) : "Seçilmedi"}</div>
+              </div>
+              <div class="text-slate-500 pt-1">
+                Önce giriş, sonra çıkış tarihini seçin.
+              </div>
+            </div>
           </div>
         `;
       }
@@ -158,18 +180,42 @@
 
       return `
         <div class="bg-white text-slate-900 rounded-[28px] p-5 shadow-lg">
-          <div class="text-lg font-semibold mb-4">Rezervasyon Özeti</div>
-          <div class="space-y-2 text-sm md:text-base">
-            <div><span class="font-medium">Giriş:</span> ${formatDateTR(startDate)}</div>
-            <div><span class="font-medium">Çıkış:</span> ${formatDateTR(endDate)}</div>
-            <div><span class="font-medium">Gece:</span> ${nights}</div>
-            <div><span class="font-medium">Toplam Tutar:</span> ${formatPrice(total)}</div>
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <div class="text-lg font-semibold">Rezervasyon Özeti</div>
+            <button
+              onclick="resetSelection(); renderSelectedSection();"
+              class="text-sm text-slate-500 hover:text-slate-700 transition"
+            >
+              Temizle
+            </button>
+          </div>
+
+          <div class="space-y-3 text-sm md:text-base">
+            <div class="rounded-xl bg-slate-50 p-3">
+              <div class="text-slate-500 text-sm">Giriş</div>
+              <div class="font-medium">${formatDateTR(startDate)}</div>
+            </div>
+
+            <div class="rounded-xl bg-slate-50 p-3">
+              <div class="text-slate-500 text-sm">Çıkış</div>
+              <div class="font-medium">${formatDateTR(endDate)}</div>
+            </div>
+
+            <div class="rounded-xl bg-slate-50 p-3">
+              <div class="text-slate-500 text-sm">Konaklama</div>
+              <div class="font-medium">${nights} gece</div>
+            </div>
+
+            <div class="rounded-xl bg-emerald-50 p-3 border border-emerald-100">
+              <div class="text-emerald-700 text-sm">Toplam Tutar</div>
+              <div class="font-semibold text-xl text-emerald-800">${formatPrice(total)}</div>
+            </div>
           </div>
 
           <a
             href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}"
             target="_blank"
-            class="mt-5 inline-flex items-center justify-center rounded-xl bg-green-500 text-white px-5 py-3 font-medium hover:bg-green-600 transition w-full md:w-fit"
+            class="mt-5 inline-flex items-center justify-center rounded-xl bg-green-500 text-white px-5 py-3 font-medium hover:bg-green-600 transition w-full"
           >
             WhatsApp ile Rezervasyon Sor
           </a>
@@ -185,7 +231,9 @@
       const total = Math.ceil((startOffset + last.getDate()) / 7) * 7;
 
       let html = `<div class="bg-white text-slate-900 rounded-[28px] p-4 shadow-lg">`;
-      html += `<h3 class="text-center font-semibold text-lg mb-3">${months[month]} ${year}</h3>`;
+      html += `<div class="flex items-center justify-between mb-3">`;
+      html += `<h3 class="text-center font-semibold text-lg w-full">${months[month]} ${year}</h3>`;
+      html += `</div>`;
       html += `<div class="grid grid-cols-7 text-center text-sm text-slate-500 mb-2">`;
       days.forEach(d => html += `<div>${d}</div>`);
       html += `</div>`;
@@ -208,7 +256,7 @@
           if (isBooked) {
             style = "bg-rose-100 text-rose-500";
           } else if (isStart || isEnd) {
-            style = "bg-emerald-500 text-white";
+            style = "bg-emerald-500 text-white ring-2 ring-emerald-300";
             clickable = "hover:scale-105";
           } else if (isRange) {
             style = "bg-emerald-100 text-emerald-900";
@@ -223,6 +271,7 @@
           <button
             ${isCurrentMonth && !isBooked ? `onclick="selectDate('${iso}')"` : ""}
             class="rounded-xl p-2 text-xs transition ${style} ${isBooked ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'} ${clickable}"
+            title="${isBooked ? 'Dolu' : isCurrentMonth ? 'Müsait' : ''}"
           >
             <div class="font-bold">${date.getDate()}</div>
             <div>${formatPrice(price)}</div>
@@ -230,7 +279,26 @@
         `;
       }
 
-      html += `</div></div>`;
+      html += `</div>`;
+
+      html += `
+        <div class="flex flex-wrap gap-3 mt-4 text-xs md:text-sm">
+          <div class="flex items-center gap-2">
+            <span class="w-4 h-4 rounded bg-blue-200 inline-block"></span>
+            <span>Müsait</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-4 h-4 rounded bg-rose-100 inline-block"></span>
+            <span>Dolu</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-4 h-4 rounded bg-emerald-500 inline-block"></span>
+            <span>Seçilen tarih</span>
+          </div>
+        </div>
+      `;
+
+      html += `</div>`;
       return html;
     }
 
@@ -318,7 +386,7 @@
                 <div class="text-2xl font-semibold">${formatPrice(selectedVilla.price)} / gece</div>
 
                 <div class="text-sm text-slate-500">
-                  Takvimden giriş ve çıkış tarihi seçerek toplam tutarı görebilirsiniz.
+                  Takvimden önce giriş, sonra çıkış tarihini seçin. Dolu günler seçilemez.
                 </div>
 
                 <a

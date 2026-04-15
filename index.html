@@ -11,7 +11,7 @@
 <body class="bg-[#1e3470] font-sans text-white">
   <div class="max-w-[1500px] mx-auto px-6 py-10">
 
-    <!-- BAŞLIK / LOGO BLOĞU - AYNI KALSIN -->
+    <!-- BAŞLIK / LOGO BLOĞU -->
     <div class="flex items-center justify-center gap-6 mt-10 mb-12 px-4 flex-wrap">
       <img
         src="logo.png"
@@ -56,7 +56,6 @@
     let startDate = null;
     let endDate = null;
 
-    // Takvim başlangıç ayı: bugünün ayı; 2026 dışında ise Ocak 2026'dan başlasın
     const today = new Date();
     let visibleMonth = today.getFullYear() === CALENDAR_YEAR ? today.getMonth() : 0;
 
@@ -73,10 +72,22 @@
       return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     }
 
+    function getNightPrice(villa, monthNumber) {
+      return Number(villa.monthlyPrices?.[monthNumber] || 0);
+    }
+
+    function getVisibleMonthPrice(villa) {
+      return getNightPrice(villa, visibleMonth + 1);
+    }
+
     function getBookedMap(villa) {
       const map = {};
       (villa.bookedDates || []).forEach(date => {
-        map[date] = { status: "dolu", price: villa.price };
+        const monthNum = parseISO(date).getMonth() + 1;
+        map[date] = {
+          status: "dolu",
+          price: getNightPrice(villa, monthNum)
+        };
       });
       return map;
     }
@@ -152,14 +163,14 @@
     function previousMonth() {
       if (visibleMonth > 0) {
         visibleMonth -= 1;
-        renderSelectedSection();
+        render();
       }
     }
 
     function nextMonth() {
       if (visibleMonth < 10) {
         visibleMonth += 1;
-        renderSelectedSection();
+        render();
       }
     }
 
@@ -195,14 +206,15 @@
       }
 
       const nights = nightsBetween(startDate, endDate);
-      let total = 0;
-let current = new Date(startDate);
 
-while (current < parseISO(endDate)) {
-  const m = current.getMonth() + 1;
-  total += selectedVilla.monthlyPrices[m];
-  current.setDate(current.getDate() + 1);
-}
+      let total = 0;
+      let current = new Date(startDate);
+      while (current < parseISO(endDate)) {
+        const m = current.getMonth() + 1;
+        total += getNightPrice(selectedVilla, m);
+        current.setDate(current.getDate() + 1);
+      }
+
       const message = `Merhaba, ${selectedVilla.name} için ${formatDateTR(startDate)} giriş ve ${formatDateTR(endDate)} çıkış olmak üzere ${nights} gecelik rezervasyon hakkında bilgi almak istiyorum. Toplam fiyat: ${formatPrice(total)}.`;
 
       return `
@@ -272,8 +284,7 @@ while (current < parseISO(endDate)) {
         const isStart = startDate && isSameDay(iso, startDate);
         const isEnd = endDate && isSameDay(iso, endDate);
         const isRange = isInSelectedRange(iso);
-        const monthNumber = month + 1;
-        const price = selectedVilla.monthlyPrices[monthNumber];
+        const price = getNightPrice(selectedVilla, month + 1);
 
         let style = "bg-slate-100 text-slate-400";
         let clickable = "";
@@ -349,6 +360,8 @@ while (current < parseISO(endDate)) {
           });
         };
 
+        const cardPrice = getVisibleMonthPrice(v);
+
         card.innerHTML = `
           <div class="relative">
             <img src="${v.cover}" class="w-full h-[240px] object-cover" />
@@ -357,7 +370,7 @@ while (current < parseISO(endDate)) {
           <div class="p-5">
             <div class="flex justify-between items-start gap-3">
               <div class="text-2xl font-semibold leading-tight">${v.name}</div>
-              <div class="text-xl font-semibold whitespace-nowrap">${formatPrice(v.price)}</div>
+              <div class="text-xl font-semibold whitespace-nowrap">${formatPrice(cardPrice)}</div>
             </div>
             <div class="text-sm text-slate-500 mt-2">${v.location}</div>
             <div class="text-sm text-slate-700 mt-4 leading-7">${v.description}</div>
@@ -389,6 +402,7 @@ while (current < parseISO(endDate)) {
       }
 
       const nextMonthVisible = visibleMonth + 1 <= 11 ? visibleMonth + 1 : null;
+      const selectedMonthPrice = getNightPrice(selectedVilla, visibleMonth + 1);
 
       section.innerHTML = `
         <div class="bg-white text-slate-900 rounded-[32px] overflow-hidden shadow-xl">
@@ -409,7 +423,7 @@ while (current < parseISO(endDate)) {
                 <div class="text-slate-500">${selectedVilla.location}</div>
                 <div class="text-slate-700 leading-7">${selectedVilla.description}</div>
                 <div class="text-slate-500">Kapasite: ${selectedVilla.capacity}</div>
-                <div class="text-2xl font-semibold">${formatPrice(selectedVilla.price)} / gece</div>
+                <div class="text-2xl font-semibold">${formatPrice(selectedMonthPrice)} / gece</div>
 
                 <div class="text-sm text-slate-500">
                   Takvimden önce giriş, sonra çıkış tarihini seçin. Dolu günler seçilemez.

@@ -1,0 +1,78 @@
+[
+  {
+    "id": 1,
+    "name": "Villa Rüya-3",
+    "cover": "ruya-3.jpg",
+    "images": [
+      "ruya-3.jpg",
+      "ruya-3-1.jpg",
+      "ruya-3-2.jpg",
+      "ruya-3-3.jpg"
+    ],
+    "price": 9000,
+    "location": "Kalkan - Kördere",
+    "description": "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
+    "capacity": "4-8 kişi",
+    "bookedDates": [
+      "2026-04-14",
+      "2026-04-15",
+      "2026-04-16"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Villa Rüya-4",
+    "cover": "ruya-4.jpg",
+    "images": [
+      "ruya-4.jpg",
+      "ruya-4-1.jpg",
+      "ruya-4-2.jpg",
+      "ruya-4-3.jpg"
+    ],
+    "price": 9000,
+    "location": "Kalkan - Kördere",
+    "description": "4 yatak odası, her odada banyo, özel havuz ve deniz manzarası",
+    "capacity": "4-8 kişi",
+    "bookedDates": [
+      "2026-04-20",
+      "2026-04-21"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Villa Rüya-1",
+    "cover": "ruya-1.jpg",
+    "images": [
+      "ruya-1.jpg",
+      "ruya-1-2.jpg",
+      "ruya-1-3.jpg",
+      "ruya-1-4.jpg"
+    ],
+    "price": 8000,
+    "location": "Kalkan - İslamlar",
+    "description": "4 yatak odası, her odada banyosu bulunmaktadır. Kendine ait havuzu, izole bahçesi ve orman manzarası vardır.",
+    "capacity": "4-8 kişi",
+    "bookedDates": [
+      "2026-04-10",
+      "2026-04-11"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Villa Rüya-2",
+    "cover": "ruya-2.jpg",
+    "images": [
+      "ruya-2.jpg",
+      "ruya-2-2.jpg",
+      "ruya-2-3.jpg"
+    ],
+    "price": 8000,
+    "location": "Kalkan - İslamlar",
+    "description": "4 yatak odası, her odada banyosu bulunmaktadır. Kendine ait havuzu, izole bahçesi ve orman manzarası vardır.",
+    "capacity": "4-8 kişi",
+    "bookedDates": [
+      "2026-04-25",
+      "2026-04-26"
+    ]
+  }
+]

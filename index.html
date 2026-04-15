@@ -265,7 +265,8 @@
         const isStart = startDate && isSameDay(iso, startDate);
         const isEnd = endDate && isSameDay(iso, endDate);
         const isRange = isInSelectedRange(iso);
-        const price = selectedVilla.price;
+        const monthNumber = month + 1;
+        const price = selectedVilla.monthlyPrices[monthNumber];
 
         let style = "bg-slate-100 text-slate-400";
         let clickable = "";

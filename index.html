@@ -195,7 +195,14 @@
       }
 
       const nights = nightsBetween(startDate, endDate);
-      const total = nights * selectedVilla.price;
+      let total = 0;
+let current = new Date(startDate);
+
+while (current < parseISO(endDate)) {
+  const m = current.getMonth() + 1;
+  total += selectedVilla.monthlyPrices[m];
+  current.setDate(current.getDate() + 1);
+}
       const message = `Merhaba, ${selectedVilla.name} için ${formatDateTR(startDate)} giriş ve ${formatDateTR(endDate)} çıkış olmak üzere ${nights} gecelik rezervasyon hakkında bilgi almak istiyorum. Toplam fiyat: ${formatPrice(total)}.`;
 
       return `

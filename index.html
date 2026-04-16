@@ -337,50 +337,80 @@
       return html;
     }
 
-    function renderVillaList() {
-      const list = document.getElementById("villaList");
-      list.innerHTML = "";
+<script>
+function renderVillaList() {
+  const list = document.getElementById("villaList");
+  list.innerHTML = "";
 
-      villas.forEach(v => {
-        const card = document.createElement("button");
-        card.className = `
-          bg-white rounded-[24px] md:rounded-[28px] overflow-hidden shadow-lg text-left text-slate-900
-          transition hover:-translate-y-1 border-2
-          ${selectedVilla && selectedVilla.id === v.id ? "border-white/80" : "border-transparent"}
-        `;
+  villas.forEach(v => {
+    const card = document.createElement("button");
+    card.className = `
+      group bg-white rounded-[26px] overflow-hidden text-left text-slate-900
+      transition duration-300 hover:-translate-y-1 hover:shadow-2xl
+      border
+      ${selectedVilla && selectedVilla.id === v.id
+        ? "border-white/90 ring-2 ring-white/40 shadow-2xl"
+        : "border-white/10 shadow-lg"}
+    `;
 
-        card.onclick = () => {
-          selectedVilla = v;
-          selectedImageIndex = 0;
-          resetSelection();
-          render();
-          document.getElementById("selectedSection").scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-          });
-        };
-
-        const cardPrice = getVisibleMonthPrice(v);
-
-        card.innerHTML = `
-          <div class="relative">
-            <img src="${v.cover}" class="w-full h-[220px] md:h-[240px] object-cover" />
-          </div>
-
-          <div class="p-4 md:p-5">
-            <div class="flex justify-between items-start gap-3">
-              <div class="text-xl md:text-2xl font-semibold leading-tight">${v.name}</div>
-              <div class="text-lg md:text-xl font-semibold whitespace-nowrap">${formatPrice(cardPrice)}</div>
-            </div>
-            <div class="text-sm text-slate-500 mt-2">${v.location}</div>
-            <div class="text-sm text-slate-700 mt-3 md:mt-4 leading-7">${v.description}</div>
-            <div class="text-sm text-slate-500 mt-3">Kapasite: ${v.capacity}</div>
-          </div>
-        `;
-
-        list.appendChild(card);
+    card.onclick = () => {
+      selectedVilla = v;
+      selectedImageIndex = 0;
+      resetSelection();
+      render();
+      document.getElementById("selectedSection").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
       });
-    }
+    };
+
+    const cardPrice = getVisibleMonthPrice(v);
+
+    card.innerHTML = `
+      <div class="relative overflow-hidden">
+        <img
+          src="${v.cover}"
+          class="w-full h-[220px] md:h-[240px] object-cover transition duration-500 group-hover:scale-105"
+        />
+
+        <div class="absolute top-3 right-3">
+          <div class="bg-white/95 backdrop-blur-sm text-slate-900 text-sm md:text-base font-semibold px-3 py-1.5 rounded-full shadow-md">
+            ${formatPrice(cardPrice)}
+          </div>
+        </div>
+
+        <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent"></div>
+      </div>
+
+      <div class="p-4 md:p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-xl md:text-2xl font-semibold leading-tight">${v.name}</h3>
+            <p class="text-sm text-slate-500 mt-1">${v.location}</p>
+          </div>
+        </div>
+
+        <p class="text-sm md:text-[15px] text-slate-700 mt-4 leading-7 min-h-[84px]">
+          ${v.description}
+        </p>
+
+        <div class="flex items-center justify-between mt-4">
+          <span class="text-sm text-slate-500">Kapasite: ${v.capacity}</span>
+          <span class="text-xs uppercase tracking-[0.18em] text-slate-400">PlusPica</span>
+        </div>
+
+        <div class="mt-5">
+          <div class="w-full rounded-xl bg-[#1e3470] text-white text-center py-3 font-medium transition duration-300 group-hover:bg-[#162a5c]">
+            İncele
+          </div>
+        </div>
+      </div>
+    `;
+
+    list.appendChild(card);
+  });
+}
+</script>
 
     function renderGalleryThumbs() {
       return selectedVilla.images.map((img, index) => `

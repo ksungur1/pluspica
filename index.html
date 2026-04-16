@@ -9,26 +9,26 @@
 </head>
 
 <body class="bg-[#1e3470] font-sans text-white">
-  <div class="max-w-[1500px] mx-auto px-6 py-10">
+  <div class="max-w-[1500px] mx-auto px-4 md:px-6 py-6 md:py-10">
 
     <!-- BAŞLIK / LOGO BLOĞU -->
-    <div class="flex items-center justify-center gap-6 mt-10 mb-12 px-4 flex-wrap">
+    <div class="flex items-center justify-center gap-3 md:gap-6 mt-4 md:mt-10 mb-8 md:mb-12 px-2 md:px-4 flex-wrap">
       <img
         src="logo.png"
-        class="w-[800px] md:w-[1000px] opacity-95 drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"
+        class="w-[260px] sm:w-[340px] md:w-[800px] lg:w-[1000px] opacity-95 drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"
         alt="PlusPica Logo"
       />
 
-      <div class="text-center mt-8 mb-10 px-4">
+      <div class="text-center mt-2 md:mt-8 mb-4 md:mb-10 px-2 md:px-4">
         <h1
-          class="text-white text-5xl md:text-7xl leading-none"
+          class="text-white text-3xl sm:text-4xl md:text-5xl lg:text-7xl leading-tight md:leading-none"
           style="font-family: 'Cormorant Garamond', serif; font-weight: 600; letter-spacing: 0.5px;"
         >
           Kalkan'da Seçili Lüks Villalar
         </h1>
 
         <p
-          class="text-white/80 mt-4 text-base md:text-lg"
+          class="text-white/80 mt-3 md:mt-4 text-sm sm:text-base md:text-lg"
           style="font-family: 'Inter', sans-serif; font-weight: 400; letter-spacing: 0.4px;"
         >
           Günlük ve haftalık kiralama seçenekleri
@@ -39,8 +39,8 @@
     <div id="loading" class="text-center text-white/80 py-10">Yükleniyor...</div>
     <div id="error" class="hidden text-center text-red-200 py-10"></div>
 
-    <div id="villaList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12"></div>
-    <div id="selectedSection" class="space-y-8"></div>
+    <div id="villaList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12"></div>
+    <div id="selectedSection" class="space-y-6 md:space-y-8"></div>
   </div>
 
   <script>
@@ -177,9 +177,9 @@
     function getReservationSummary() {
       if (!startDate || !endDate) {
         return `
-          <div class="bg-white text-slate-900 rounded-[28px] p-5 shadow-lg">
+          <div class="bg-white text-slate-900 rounded-[24px] md:rounded-[28px] p-4 md:p-5 shadow-lg">
             <div class="flex items-center justify-between gap-3 mb-4">
-              <div class="text-lg font-semibold">Rezervasyon Özeti</div>
+              <div class="text-base md:text-lg font-semibold">Rezervasyon Özeti</div>
               <button
                 onclick="resetSelection(); renderSelectedSection();"
                 class="text-sm text-slate-500 hover:text-slate-700 transition"
@@ -190,14 +190,14 @@
 
             <div class="space-y-3 text-sm md:text-base">
               <div class="rounded-xl bg-slate-50 p-3">
-                <div class="text-slate-500 text-sm">Giriş</div>
+                <div class="text-slate-500 text-xs md:text-sm">Giriş</div>
                 <div class="font-medium">${startDate ? formatDateTR(startDate) : "Seçilmedi"}</div>
               </div>
               <div class="rounded-xl bg-slate-50 p-3">
-                <div class="text-slate-500 text-sm">Çıkış</div>
+                <div class="text-slate-500 text-xs md:text-sm">Çıkış</div>
                 <div class="font-medium">${endDate ? formatDateTR(endDate) : "Seçilmedi"}</div>
               </div>
-              <div class="text-slate-500 pt-1">
+              <div class="text-slate-500 pt-1 text-sm">
                 Önce giriş, sonra çıkış tarihini seçin.
               </div>
             </div>
@@ -218,9 +218,9 @@
       const message = `Merhaba, ${selectedVilla.name} için ${formatDateTR(startDate)} giriş ve ${formatDateTR(endDate)} çıkış olmak üzere ${nights} gecelik rezervasyon hakkında bilgi almak istiyorum. Toplam fiyat: ${formatPrice(total)}.`;
 
       return `
-        <div class="bg-white text-slate-900 rounded-[28px] p-5 shadow-lg">
+        <div class="bg-white text-slate-900 rounded-[24px] md:rounded-[28px] p-4 md:p-5 shadow-lg">
           <div class="flex items-center justify-between gap-3 mb-4">
-            <div class="text-lg font-semibold">Rezervasyon Özeti</div>
+            <div class="text-base md:text-lg font-semibold">Rezervasyon Özeti</div>
             <button
               onclick="resetSelection(); renderSelectedSection();"
               class="text-sm text-slate-500 hover:text-slate-700 transition"
@@ -231,23 +231,23 @@
 
           <div class="space-y-3 text-sm md:text-base">
             <div class="rounded-xl bg-slate-50 p-3">
-              <div class="text-slate-500 text-sm">Giriş</div>
+              <div class="text-slate-500 text-xs md:text-sm">Giriş</div>
               <div class="font-medium">${formatDateTR(startDate)}</div>
             </div>
 
             <div class="rounded-xl bg-slate-50 p-3">
-              <div class="text-slate-500 text-sm">Çıkış</div>
+              <div class="text-slate-500 text-xs md:text-sm">Çıkış</div>
               <div class="font-medium">${formatDateTR(endDate)}</div>
             </div>
 
             <div class="rounded-xl bg-slate-50 p-3">
-              <div class="text-slate-500 text-sm">Konaklama</div>
+              <div class="text-slate-500 text-xs md:text-sm">Konaklama</div>
               <div class="font-medium">${nights} gece</div>
             </div>
 
             <div class="rounded-xl bg-emerald-50 p-3 border border-emerald-100">
-              <div class="text-emerald-700 text-sm">Toplam Tutar</div>
-              <div class="font-semibold text-xl text-emerald-800">${formatPrice(total)}</div>
+              <div class="text-emerald-700 text-xs md:text-sm">Toplam Tutar</div>
+              <div class="font-semibold text-lg md:text-xl text-emerald-800">${formatPrice(total)}</div>
             </div>
           </div>
 
@@ -269,12 +269,12 @@
       const startOffset = (first.getDay() + 6) % 7;
       const total = Math.ceil((startOffset + last.getDate()) / 7) * 7;
 
-      let html = `<div class="bg-white text-slate-900 rounded-[28px] p-4 shadow-lg">`;
-      html += `<h3 class="text-center font-semibold text-lg mb-3">${months[month]} ${year}</h3>`;
-      html += `<div class="grid grid-cols-7 text-center text-sm text-slate-500 mb-2">`;
+      let html = `<div class="bg-white text-slate-900 rounded-[24px] md:rounded-[28px] p-3 md:p-4 shadow-lg">`;
+      html += `<h3 class="text-center font-semibold text-base md:text-lg mb-3">${months[month]} ${year}</h3>`;
+      html += `<div class="grid grid-cols-7 text-center text-[11px] md:text-sm text-slate-500 mb-2">`;
       days.forEach(d => html += `<div>${d}</div>`);
       html += `</div>`;
-      html += `<div class="grid grid-cols-7 gap-2">`;
+      html += `<div class="grid grid-cols-7 gap-1.5 md:gap-2">`;
 
       for (let i = 0; i < total; i++) {
         const date = new Date(year, month, i - startOffset + 1);
@@ -307,7 +307,7 @@
         html += `
           <button
             ${isCurrentMonth && !isBooked ? `onclick="selectDate('${iso}')"` : ""}
-            class="rounded-xl p-2 text-xs transition ${style} ${isBooked ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'} ${clickable}"
+            class="rounded-lg md:rounded-xl p-1.5 md:p-2 text-[10px] md:text-xs leading-tight transition ${style} ${isBooked ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'} ${clickable}"
             title="${isBooked ? 'Dolu' : isCurrentMonth ? 'Müsait' : ''}"
           >
             <div class="font-bold">${date.getDate()}</div>
@@ -318,17 +318,17 @@
 
       html += `</div>`;
       html += `
-        <div class="flex flex-wrap gap-3 mt-4 text-xs md:text-sm">
+        <div class="flex flex-wrap gap-3 mt-4 text-[11px] md:text-sm">
           <div class="flex items-center gap-2">
-            <span class="w-4 h-4 rounded bg-blue-200 inline-block"></span>
+            <span class="w-3.5 h-3.5 md:w-4 md:h-4 rounded bg-blue-200 inline-block"></span>
             <span>Müsait</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="w-4 h-4 rounded bg-rose-100 inline-block"></span>
+            <span class="w-3.5 h-3.5 md:w-4 md:h-4 rounded bg-rose-100 inline-block"></span>
             <span>Dolu</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="w-4 h-4 rounded bg-emerald-500 inline-block"></span>
+            <span class="w-3.5 h-3.5 md:w-4 md:h-4 rounded bg-emerald-500 inline-block"></span>
             <span>Seçilen tarih</span>
           </div>
         </div>
@@ -344,7 +344,7 @@
       villas.forEach(v => {
         const card = document.createElement("button");
         card.className = `
-          bg-white rounded-[28px] overflow-hidden shadow-lg text-left text-slate-900
+          bg-white rounded-[24px] md:rounded-[28px] overflow-hidden shadow-lg text-left text-slate-900
           transition hover:-translate-y-1 border-2
           ${selectedVilla && selectedVilla.id === v.id ? "border-white/80" : "border-transparent"}
         `;
@@ -364,16 +364,16 @@
 
         card.innerHTML = `
           <div class="relative">
-            <img src="${v.cover}" class="w-full h-[240px] object-cover" />
+            <img src="${v.cover}" class="w-full h-[220px] md:h-[240px] object-cover" />
           </div>
 
-          <div class="p-5">
+          <div class="p-4 md:p-5">
             <div class="flex justify-between items-start gap-3">
-              <div class="text-2xl font-semibold leading-tight">${v.name}</div>
-              <div class="text-xl font-semibold whitespace-nowrap">${formatPrice(cardPrice)}</div>
+              <div class="text-xl md:text-2xl font-semibold leading-tight">${v.name}</div>
+              <div class="text-lg md:text-xl font-semibold whitespace-nowrap">${formatPrice(cardPrice)}</div>
             </div>
             <div class="text-sm text-slate-500 mt-2">${v.location}</div>
-            <div class="text-sm text-slate-700 mt-4 leading-7">${v.description}</div>
+            <div class="text-sm text-slate-700 mt-3 md:mt-4 leading-7">${v.description}</div>
             <div class="text-sm text-slate-500 mt-3">Kapasite: ${v.capacity}</div>
           </div>
         `;
@@ -386,9 +386,9 @@
       return selectedVilla.images.map((img, index) => `
         <button
           onclick="changeImage(${index})"
-          class="shrink-0 rounded-2xl overflow-hidden border-2 ${selectedImageIndex === index ? 'border-[#1e3470]' : 'border-transparent'}"
+          class="shrink-0 rounded-xl md:rounded-2xl overflow-hidden border-2 ${selectedImageIndex === index ? 'border-[#1e3470]' : 'border-transparent'}"
         >
-          <img src="${img}" class="w-28 h-20 md:w-36 md:h-24 object-cover" />
+          <img src="${img}" class="w-24 h-16 md:w-36 md:h-24 object-cover" />
         </button>
       `).join("");
     }
@@ -405,25 +405,25 @@
       const selectedMonthPrice = getNightPrice(selectedVilla, visibleMonth + 1);
 
       section.innerHTML = `
-        <div class="bg-white text-slate-900 rounded-[32px] overflow-hidden shadow-xl">
+        <div class="bg-white text-slate-900 rounded-[24px] md:rounded-[32px] overflow-hidden shadow-xl">
           <div class="grid lg:grid-cols-2 gap-0">
             <div class="p-4 md:p-6">
-              <img src="${selectedVilla.images[selectedImageIndex]}" class="w-full h-72 md:h-[460px] object-cover rounded-[24px]" />
+              <img src="${selectedVilla.images[selectedImageIndex]}" class="w-full h-60 sm:h-72 md:h-[460px] object-cover rounded-[18px] md:rounded-[24px]" />
 
               <div class="mt-4 overflow-x-auto">
-                <div class="flex gap-3 pb-2">
+                <div class="flex gap-2 md:gap-3 pb-2">
                   ${renderGalleryThumbs()}
                 </div>
               </div>
             </div>
 
-            <div class="p-6 md:p-8 flex flex-col justify-center">
+            <div class="p-5 md:p-8 flex flex-col justify-center">
               <div class="flex flex-col gap-4">
-                <h2 class="text-3xl md:text-4xl font-bold">${selectedVilla.name}</h2>
+                <h2 class="text-2xl md:text-4xl font-bold">${selectedVilla.name}</h2>
                 <div class="text-slate-500">${selectedVilla.location}</div>
                 <div class="text-slate-700 leading-7">${selectedVilla.description}</div>
                 <div class="text-slate-500">Kapasite: ${selectedVilla.capacity}</div>
-                <div class="text-2xl font-semibold">${formatPrice(selectedMonthPrice)} / gece</div>
+                <div class="text-xl md:text-2xl font-semibold">${formatPrice(selectedMonthPrice)} / gece</div>
 
                 <div class="text-sm text-slate-500">
                   Takvimden önce giriş, sonra çıkış tarihini seçin. Dolu günler seçilemez.
@@ -441,10 +441,10 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between gap-4 mt-2">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 mt-2">
           <button
             onclick="previousMonth()"
-            class="rounded-xl bg-white/10 px-4 py-2 text-white hover:bg-white/20 transition ${visibleMonth === 0 ? 'opacity-40 cursor-not-allowed' : ''}"
+            class="rounded-xl bg-white/10 px-4 py-2 text-white hover:bg-white/20 transition w-full sm:w-auto ${visibleMonth === 0 ? 'opacity-40 cursor-not-allowed' : ''}"
             ${visibleMonth === 0 ? 'disabled' : ''}
           >
             ← Önceki Ay
@@ -456,18 +456,18 @@
 
           <button
             onclick="nextMonth()"
-            class="rounded-xl bg-white/10 px-4 py-2 text-white hover:bg-white/20 transition ${visibleMonth >= 10 ? 'opacity-40 cursor-not-allowed' : ''}"
+            class="rounded-xl bg-white/10 px-4 py-2 text-white hover:bg-white/20 transition w-full sm:w-auto ${visibleMonth >= 10 ? 'opacity-40 cursor-not-allowed' : ''}"
             ${visibleMonth >= 10 ? 'disabled' : ''}
           >
             Sonraki Ay →
           </button>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-6">
+        <div class="grid lg:grid-cols-3 gap-4 md:gap-6">
           <div class="lg:col-span-1">
             ${getReservationSummary()}
           </div>
-          <div class="lg:col-span-2 grid md:grid-cols-2 gap-6">
+          <div class="lg:col-span-2 grid md:grid-cols-2 gap-4 md:gap-6">
             ${buildMonth(CALENDAR_YEAR, visibleMonth)}
             ${nextMonthVisible !== null ? buildMonth(CALENDAR_YEAR, nextMonthVisible) : '<div></div>'}
           </div>

@@ -8,10 +8,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-[#1e3470] font-sans text-white">
+<body class="bg-[#1e3470] text-white" style="font-family: 'Inter', sans-serif;">
   <div class="max-w-[1500px] mx-auto px-4 md:px-6 py-6 md:py-10">
 
-    <!-- BAŞLIK / LOGO BLOĞU -->
+    <!-- LOGO + BAŞLIK -->
     <div class="flex items-center justify-center gap-3 md:gap-6 mt-4 md:mt-10 mb-8 md:mb-12 px-2 md:px-4 flex-wrap">
       <img
         src="logo.png"
@@ -59,8 +59,8 @@
     const today = new Date();
     let visibleMonth = today.getFullYear() === CALENDAR_YEAR ? today.getMonth() : 0;
 
-    function formatPrice(p) {
-      return Number(p).toLocaleString("tr-TR") + " ₺";
+    function formatPrice(value) {
+      return Number(value || 0).toLocaleString("tr-TR") + " ₺";
     }
 
     function parseISO(iso) {
@@ -69,11 +69,12 @@
 
     function formatDateTR(iso) {
       const d = parseISO(iso);
-      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+      return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
     }
 
     function getNightPrice(villa, monthNumber) {
-      return Number(villa.monthlyPrices?.[monthNumber] || 0);
+      if (!villa || !villa.monthlyPrices) return 0;
+      return Number(villa.monthlyPrices[String(monthNumber)] ?? villa.monthlyPrices[monthNumber] ?? 0);
     }
 
     function getVisibleMonthPrice(villa) {
@@ -82,7 +83,7 @@
 
     function getBookedMap(villa) {
       const map = {};
-      (villa.bookedDates || []).forEach(date => {
+      (villa.bookedDates || []).forEach((date) => {
         const monthNum = parseISO(date).getMonth() + 1;
         map[date] = {
           status: "dolu",
@@ -90,6 +91,20 @@
         };
       });
       return map;
+    }
+
+    function nightsBetween(startIso, endIso) {
+      const ms = parseISO(endIso) - parseISO(startIso);
+      return Math.round(ms / (1000 * 60 * 60 * 24));
+    }
+
+    function isSameDay(a, b) {
+      return a === b;
+    }
+
+    function isInSelectedRange(iso) {
+      if (!startDate || !endDate) return false;
+      return iso > startDate && iso < endDate;
     }
 
     function hasBookedDayBetween(startIso, endIso) {
@@ -106,20 +121,6 @@
         current.setDate(current.getDate() + 1);
       }
       return false;
-    }
-
-    function isSameDay(a, b) {
-      return a === b;
-    }
-
-    function isInSelectedRange(iso) {
-      if (!startDate || !endDate) return false;
-      return iso > startDate && iso < endDate;
-    }
-
-    function nightsBetween(startIso, endIso) {
-      const ms = parseISO(endIso) - parseISO(startIso);
-      return Math.round(ms / (1000 * 60 * 60 * 24));
     }
 
     function resetSelection() {
@@ -174,6 +175,17 @@
       }
     }
 
+    function totalForRange(villa, startIso, endIso) {
+      let total = 0;
+      let current = new Date(startIso);
+      while (current < parseISO(endIso)) {
+        const m = current.getMonth() + 1;
+        total += getNightPrice(villa, m);
+        current.setDate(current.getDate() + 1);
+      }
+      return total;
+    }
+
     function getReservationSummary() {
       if (!startDate || !endDate) {
         return `
@@ -193,10 +205,12 @@
                 <div class="text-slate-500 text-xs md:text-sm">Giriş</div>
                 <div class="font-medium">${startDate ? formatDateTR(startDate) : "Seçilmedi"}</div>
               </div>
+
               <div class="rounded-xl bg-slate-50 p-3">
                 <div class="text-slate-500 text-xs md:text-sm">Çıkış</div>
                 <div class="font-medium">${endDate ? formatDateTR(endDate) : "Seçilmedi"}</div>
               </div>
+
               <div class="text-slate-500 pt-1 text-sm">
                 Önce giriş, sonra çıkış tarihini seçin.
               </div>
@@ -206,15 +220,7 @@
       }
 
       const nights = nightsBetween(startDate, endDate);
-
-      let total = 0;
-      let current = new Date(startDate);
-      while (current < parseISO(endDate)) {
-        const m = current.getMonth() + 1;
-        total += getNightPrice(selectedVilla, m);
-        current.setDate(current.getDate() + 1);
-      }
-
+      const total = totalForRange(selectedVilla, startDate, endDate);
       const message = `Merhaba, ${selectedVilla.name} için ${formatDateTR(startDate)} giriş ve ${formatDateTR(endDate)} çıkış olmak üzere ${nights} gecelik rezervasyon hakkında bilgi almak istiyorum. Toplam fiyat: ${formatPrice(total)}.`;
 
       return `
@@ -267,16 +273,18 @@
       const first = new Date(year, month, 1);
       const last = new Date(year, month + 1, 0);
       const startOffset = (first.getDay() + 6) % 7;
-      const total = Math.ceil((startOffset + last.getDate()) / 7) * 7;
+      const totalCells = Math.ceil((startOffset + last.getDate()) / 7) * 7;
 
       let html = `<div class="bg-white text-slate-900 rounded-[24px] md:rounded-[28px] p-3 md:p-4 shadow-lg">`;
       html += `<h3 class="text-center font-semibold text-base md:text-lg mb-3">${months[month]} ${year}</h3>`;
       html += `<div class="grid grid-cols-7 text-center text-[11px] md:text-sm text-slate-500 mb-2">`;
-      days.forEach(d => html += `<div>${d}</div>`);
+      days.forEach((d) => {
+        html += `<div>${d}</div>`;
+      });
       html += `</div>`;
       html += `<div class="grid grid-cols-7 gap-1.5 md:gap-2">`;
 
-      for (let i = 0; i < total; i++) {
+      for (let i = 0; i < totalCells; i++) {
         const date = new Date(year, month, i - startOffset + 1);
         const iso = date.toISOString().split("T")[0];
         const isCurrentMonth = date.getMonth() === month;
@@ -307,8 +315,8 @@
         html += `
           <button
             ${isCurrentMonth && !isBooked ? `onclick="selectDate('${iso}')"` : ""}
-            class="rounded-lg md:rounded-xl p-1.5 md:p-2 text-[10px] md:text-xs leading-tight transition ${style} ${isBooked ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'} ${clickable}"
-            title="${isBooked ? 'Dolu' : isCurrentMonth ? 'Müsait' : ''}"
+            class="rounded-lg md:rounded-xl p-1.5 md:p-2 text-[10px] md:text-xs leading-tight transition ${style} ${isBooked ? "opacity-70 cursor-not-allowed" : "cursor-pointer"} ${clickable}"
+            title="${isBooked ? "Dolu" : isCurrentMonth ? "Müsait" : ""}"
           >
             <div class="font-bold">${date.getDate()}</div>
             <div>${formatPrice(price)}</div>
@@ -337,516 +345,90 @@
       return html;
     }
 
-<script>
-  
-  const WHATSAPP = "905339134700";
-  const CALENDAR_YEAR = 2026;
+    function renderVillaList() {
+      const list = document.getElementById("villaList");
+      list.innerHTML = "";
 
-  const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-  const days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"];
+      villas.forEach((v) => {
+        const card = document.createElement("button");
+        card.className = `
+          group bg-white rounded-[26px] overflow-hidden text-left text-slate-900
+          transition duration-300 hover:-translate-y-1 hover:shadow-2xl
+          border
+          ${selectedVilla && selectedVilla.id === v.id
+            ? "border-white/90 ring-2 ring-white/40 shadow-2xl"
+            : "border-white/10 shadow-lg"}
+        `;
 
-  let villas = [];
-  let selectedVilla = null;
-  let selectedImageIndex = 0;
-  let startDate = null;
-  let endDate = null;
+        card.onclick = () => {
+          selectedVilla = v;
+          selectedImageIndex = 0;
+          resetSelection();
+          render();
+          document.getElementById("selectedSection").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        };
 
-  const today = new Date();
-  let visibleMonth = today.getFullYear() === CALENDAR_YEAR ? today.getMonth() : 0;
+        const cardPrice = getVisibleMonthPrice(v);
 
-  function formatPrice(p) {
-    return Number(p).toLocaleString("tr-TR") + " ₺";
-  }
+        card.innerHTML = `
+          <div class="relative overflow-hidden">
+            <img
+              src="${v.cover}"
+              class="w-full h-[220px] md:h-[240px] object-cover transition duration-500 group-hover:scale-105"
+            />
 
-  function parseISO(iso) {
-    return new Date(iso + "T00:00:00");
-  }
-
-  function formatDateTR(iso) {
-    const d = parseISO(iso);
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-  }
-
-  function getNightPrice(villa, monthNumber) {
-    return Number(villa.monthlyPrices?.[monthNumber] || 0);
-  }
-
-  function getVisibleMonthPrice(villa) {
-    return getNightPrice(villa, visibleMonth + 1);
-  }
-
-  function getBookedMap(villa) {
-    const map = {};
-    (villa.bookedDates || []).forEach(date => {
-      const monthNum = parseISO(date).getMonth() + 1;
-      map[date] = {
-        status: "dolu",
-        price: getNightPrice(villa, monthNum)
-      };
-    });
-    return map;
-  }
-
-  function hasBookedDayBetween(startIso, endIso) {
-    const booked = getBookedMap(selectedVilla);
-    const start = parseISO(startIso);
-    const end = parseISO(endIso);
-
-    const current = new Date(start);
-    current.setDate(current.getDate() + 1);
-
-    while (current < end) {
-      const iso = current.toISOString().split("T")[0];
-      if (booked[iso]?.status === "dolu") return true;
-      current.setDate(current.getDate() + 1);
-    }
-    return false;
-  }
-
-  function isSameDay(a, b) {
-    return a === b;
-  }
-
-  function isInSelectedRange(iso) {
-    if (!startDate || !endDate) return false;
-    return iso > startDate && iso < endDate;
-  }
-
-  function nightsBetween(startIso, endIso) {
-    const ms = parseISO(endIso) - parseISO(startIso);
-    return Math.round(ms / (1000 * 60 * 60 * 24));
-  }
-
-  function resetSelection() {
-    startDate = null;
-    endDate = null;
-  }
-
-  function selectDate(iso) {
-    const booked = getBookedMap(selectedVilla);
-    if (booked[iso]?.status === "dolu") return;
-
-    if (!startDate || (startDate && endDate)) {
-      startDate = iso;
-      endDate = null;
-      renderSelectedSection();
-      return;
-    }
-
-    if (iso === startDate) {
-      endDate = null;
-      renderSelectedSection();
-      return;
-    }
-
-    if (parseISO(iso) < parseISO(startDate)) {
-      startDate = iso;
-      endDate = null;
-      renderSelectedSection();
-      return;
-    }
-
-    if (hasBookedDayBetween(startDate, iso)) {
-      alert("Seçtiğiniz tarih aralığında dolu gün bulunuyor. Lütfen farklı bir aralık seçin.");
-      return;
-    }
-
-    endDate = iso;
-    renderSelectedSection();
-  }
-
-  function previousMonth() {
-    if (visibleMonth > 0) {
-      visibleMonth -= 1;
-      render();
-    }
-  }
-
-  function nextMonth() {
-    if (visibleMonth < 10) {
-      visibleMonth += 1;
-      render();
-    }
-  }
-
-  function getReservationSummary() {
-    if (!startDate || !endDate) {
-      return `
-        <div class="bg-white text-slate-900 rounded-[24px] md:rounded-[28px] p-4 md:p-5 shadow-lg">
-          <div class="flex items-center justify-between gap-3 mb-4">
-            <div class="text-base md:text-lg font-semibold">Rezervasyon Özeti</div>
-            <button
-              onclick="resetSelection(); renderSelectedSection();"
-              class="text-sm text-slate-500 hover:text-slate-700 transition"
-            >
-              Temizle
-            </button>
-          </div>
-
-          <div class="space-y-3 text-sm md:text-base">
-            <div class="rounded-xl bg-slate-50 p-3">
-              <div class="text-slate-500 text-xs md:text-sm">Giriş</div>
-              <div class="font-medium">${startDate ? formatDateTR(startDate) : "Seçilmedi"}</div>
+            <div class="absolute top-3 right-3">
+              <div class="bg-white/95 backdrop-blur-sm text-slate-900 text-sm md:text-base font-semibold px-3 py-1.5 rounded-full shadow-md">
+                ${formatPrice(cardPrice)}
+              </div>
             </div>
-            <div class="rounded-xl bg-slate-50 p-3">
-              <div class="text-slate-500 text-xs md:text-sm">Çıkış</div>
-              <div class="font-medium">${endDate ? formatDateTR(endDate) : "Seçilmedi"}</div>
+
+            <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent"></div>
+          </div>
+
+          <div class="p-4 md:p-5">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="text-xl md:text-2xl font-semibold leading-tight">${v.name}</h3>
+                <p class="text-sm text-slate-500 mt-1">${v.location}</p>
+              </div>
             </div>
-            <div class="text-slate-500 pt-1 text-sm">
-              Önce giriş, sonra çıkış tarihini seçin.
+
+            <p class="text-sm md:text-[15px] text-slate-700 mt-4 leading-7 min-h-[84px]">
+              ${v.description}
+            </p>
+
+            <div class="flex items-center justify-between mt-4">
+              <span class="text-sm text-slate-500">Kapasite: ${v.capacity}</span>
+              <span class="text-xs uppercase tracking-[0.18em] text-slate-400">PlusPica</span>
             </div>
-          </div>
-        </div>
-      `;
-    }
 
-    const nights = nightsBetween(startDate, endDate);
-
-    let total = 0;
-    let current = new Date(startDate);
-    while (current < parseISO(endDate)) {
-      const m = current.getMonth() + 1;
-      total += getNightPrice(selectedVilla, m);
-      current.setDate(current.getDate() + 1);
-    }
-
-    const message = `Merhaba, ${selectedVilla.name} için ${formatDateTR(startDate)} giriş ve ${formatDateTR(endDate)} çıkış olmak üzere ${nights} gecelik rezervasyon hakkında bilgi almak istiyorum. Toplam fiyat: ${formatPrice(total)}.`;
-
-    return `
-      <div class="bg-white text-slate-900 rounded-[24px] md:rounded-[28px] p-4 md:p-5 shadow-lg">
-        <div class="flex items-center justify-between gap-3 mb-4">
-          <div class="text-base md:text-lg font-semibold">Rezervasyon Özeti</div>
-          <button
-            onclick="resetSelection(); renderSelectedSection();"
-            class="text-sm text-slate-500 hover:text-slate-700 transition"
-          >
-            Temizle
-          </button>
-        </div>
-
-        <div class="space-y-3 text-sm md:text-base">
-          <div class="rounded-xl bg-slate-50 p-3">
-            <div class="text-slate-500 text-xs md:text-sm">Giriş</div>
-            <div class="font-medium">${formatDateTR(startDate)}</div>
-          </div>
-
-          <div class="rounded-xl bg-slate-50 p-3">
-            <div class="text-slate-500 text-xs md:text-sm">Çıkış</div>
-            <div class="font-medium">${formatDateTR(endDate)}</div>
-          </div>
-
-          <div class="rounded-xl bg-slate-50 p-3">
-            <div class="text-slate-500 text-xs md:text-sm">Konaklama</div>
-            <div class="font-medium">${nights} gece</div>
-          </div>
-
-          <div class="rounded-xl bg-emerald-50 p-3 border border-emerald-100">
-            <div class="text-emerald-700 text-xs md:text-sm">Toplam Tutar</div>
-            <div class="font-semibold text-lg md:text-xl text-emerald-800">${formatPrice(total)}</div>
-          </div>
-        </div>
-
-        <a
-          href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}"
-          target="_blank"
-          class="mt-5 inline-flex items-center justify-center rounded-xl bg-green-500 text-white px-5 py-3 font-medium hover:bg-green-600 transition w-full"
-        >
-          WhatsApp ile Rezervasyon Sor
-        </a>
-      </div>
-    `;
-  }
-
-  function buildMonth(year, month) {
-    const booked = getBookedMap(selectedVilla);
-    const first = new Date(year, month, 1);
-    const last = new Date(year, month + 1, 0);
-    const startOffset = (first.getDay() + 6) % 7;
-    const total = Math.ceil((startOffset + last.getDate()) / 7) * 7;
-
-    let html = `<div class="bg-white text-slate-900 rounded-[24px] md:rounded-[28px] p-3 md:p-4 shadow-lg">`;
-    html += `<h3 class="text-center font-semibold text-base md:text-lg mb-3">${months[month]} ${year}</h3>`;
-    html += `<div class="grid grid-cols-7 text-center text-[11px] md:text-sm text-slate-500 mb-2">`;
-    days.forEach(d => html += `<div>${d}</div>`);
-    html += `</div>`;
-    html += `<div class="grid grid-cols-7 gap-1.5 md:gap-2">`;
-
-    for (let i = 0; i < total; i++) {
-      const date = new Date(year, month, i - startOffset + 1);
-      const iso = date.toISOString().split("T")[0];
-      const isCurrentMonth = date.getMonth() === month;
-      const isBooked = booked[iso]?.status === "dolu";
-      const isStart = startDate && isSameDay(iso, startDate);
-      const isEnd = endDate && isSameDay(iso, endDate);
-      const isRange = isInSelectedRange(iso);
-      const price = getNightPrice(selectedVilla, month + 1);
-
-      let style = "bg-slate-100 text-slate-400";
-      let clickable = "";
-
-      if (isCurrentMonth) {
-        if (isBooked) {
-          style = "bg-rose-100 text-rose-500";
-        } else if (isStart || isEnd) {
-          style = "bg-emerald-500 text-white ring-2 ring-emerald-300";
-          clickable = "hover:scale-105";
-        } else if (isRange) {
-          style = "bg-emerald-100 text-emerald-900";
-          clickable = "hover:scale-105";
-        } else {
-          style = "bg-blue-200 text-blue-900";
-          clickable = "hover:scale-105";
-        }
-      }
-
-      html += `
-        <button
-          ${isCurrentMonth && !isBooked ? `onclick="selectDate('${iso}')"` : ""}
-          class="rounded-lg md:rounded-xl p-1.5 md:p-2 text-[10px] md:text-xs leading-tight transition ${style} ${isBooked ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'} ${clickable}"
-          title="${isBooked ? 'Dolu' : isCurrentMonth ? 'Müsait' : ''}"
-        >
-          <div class="font-bold">${date.getDate()}</div>
-          <div>${formatPrice(price)}</div>
-        </button>
-      `;
-    }
-
-    html += `</div>`;
-    html += `
-      <div class="flex flex-wrap gap-3 mt-4 text-[11px] md:text-sm">
-        <div class="flex items-center gap-2">
-          <span class="w-3.5 h-3.5 md:w-4 md:h-4 rounded bg-blue-200 inline-block"></span>
-          <span>Müsait</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="w-3.5 h-3.5 md:w-4 md:h-4 rounded bg-rose-100 inline-block"></span>
-          <span>Dolu</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="w-3.5 h-3.5 md:w-4 md:h-4 rounded bg-emerald-500 inline-block"></span>
-          <span>Seçilen tarih</span>
-        </div>
-      </div>
-    `;
-    html += `</div>`;
-    return html;
-  }
-
-  function renderVillaList() {
-    const list = document.getElementById("villaList");
-    list.innerHTML = "";
-
-    villas.forEach(v => {
-      const card = document.createElement("button");
-      card.className = `
-        group bg-white rounded-[26px] overflow-hidden text-left text-slate-900
-        transition duration-300 hover:-translate-y-1 hover:shadow-2xl
-        border
-        ${selectedVilla && selectedVilla.id === v.id
-          ? "border-white/90 ring-2 ring-white/40 shadow-2xl"
-          : "border-white/10 shadow-lg"}
-      `;
-
-      card.onclick = () => {
-        selectedVilla = v;
-        selectedImageIndex = 0;
-        resetSelection();
-        render();
-        document.getElementById("selectedSection").scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-      };
-
-      const cardPrice = getVisibleMonthPrice(v);
-
-      card.innerHTML = `
-        <div class="relative overflow-hidden">
-          <img
-            src="${v.cover}"
-            class="w-full h-[220px] md:h-[240px] object-cover transition duration-500 group-hover:scale-105"
-          />
-
-          <div class="absolute top-3 right-3">
-            <div class="bg-white/95 backdrop-blur-sm text-slate-900 text-sm md:text-base font-semibold px-3 py-1.5 rounded-full shadow-md">
-              ${formatPrice(cardPrice)}
-            </div>
-          </div>
-
-          <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent"></div>
-        </div>
-
-        <div class="p-4 md:p-5">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h3 class="text-xl md:text-2xl font-semibold leading-tight">${v.name}</h3>
-              <p class="text-sm text-slate-500 mt-1">${v.location}</p>
-            </div>
-          </div>
-
-          <p class="text-sm md:text-[15px] text-slate-700 mt-4 leading-7 min-h-[84px]">
-            ${v.description}
-          </p>
-
-          <div class="flex items-center justify-between mt-4">
-            <span class="text-sm text-slate-500">Kapasite: ${v.capacity}</span>
-            <span class="text-xs uppercase tracking-[0.18em] text-slate-400">PlusPica</span>
-          </div>
-
-          <div class="mt-5">
-            <div class="w-full rounded-xl bg-[#1e3470] text-white text-center py-3 font-medium transition duration-300 group-hover:bg-[#162a5c]">
-              İncele
-            </div>
-          </div>
-        </div>
-      `;
-
-      list.appendChild(card);
-    });
-  }
-
-  function renderGalleryThumbs() {
-    return selectedVilla.images.map((img, index) => `
-      <button
-        onclick="changeImage(${index})"
-        class="shrink-0 rounded-xl md:rounded-2xl overflow-hidden border-2 ${selectedImageIndex === index ? 'border-[#1e3470]' : 'border-transparent'}"
-      >
-        <img src="${img}" class="w-24 h-16 md:w-36 md:h-24 object-cover" />
-      </button>
-    `).join("");
-  }
-
-  function renderSelectedSection() {
-    const section = document.getElementById("selectedSection");
-
-    if (!selectedVilla) {
-      section.innerHTML = "";
-      return;
-    }
-
-    const nextMonthVisible = visibleMonth + 1 <= 11 ? visibleMonth + 1 : null;
-    const selectedMonthPrice = getNightPrice(selectedVilla, visibleMonth + 1);
-
-    section.innerHTML = `
-      <div class="bg-white text-slate-900 rounded-[24px] md:rounded-[32px] overflow-hidden shadow-xl">
-        <div class="grid lg:grid-cols-2 gap-0">
-          <div class="p-4 md:p-6">
-            <img src="${selectedVilla.images[selectedImageIndex]}" class="w-full h-60 sm:h-72 md:h-[460px] object-cover rounded-[18px] md:rounded-[24px]" />
-
-            <div class="mt-4 overflow-x-auto">
-              <div class="flex gap-2 md:gap-3 pb-2">
-                ${renderGalleryThumbs()}
+            <div class="mt-5">
+              <div class="w-full rounded-xl bg-[#1e3470] text-white text-center py-3 font-medium transition duration-300 group-hover:bg-[#162a5c]">
+                İncele
               </div>
             </div>
           </div>
+        `;
 
-          <div class="p-5 md:p-8 flex flex-col justify-center">
-            <div class="flex flex-col gap-4">
-              <h2 class="text-2xl md:text-4xl font-bold">${selectedVilla.name}</h2>
-              <div class="text-slate-500">${selectedVilla.location}</div>
-              <div class="text-slate-700 leading-7">${selectedVilla.description}</div>
-              <div class="text-slate-500">Kapasite: ${selectedVilla.capacity}</div>
-              <div class="text-xl md:text-2xl font-semibold">${formatPrice(selectedMonthPrice)} / gece</div>
-
-              <div class="text-sm text-slate-500">
-                Takvimden önce giriş, sonra çıkış tarihini seçin. Dolu günler seçilemez.
-              </div>
-
-              <a
-                href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Merhaba, ${selectedVilla.name} hakkında bilgi almak istiyorum.`)}"
-                target="_blank"
-                class="inline-flex items-center justify-center rounded-xl bg-green-500 text-white px-5 py-3 font-medium hover:bg-green-600 transition w-full md:w-fit"
-              >
-                WhatsApp ile Bilgi Al
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 mt-2">
-        <button
-          onclick="previousMonth()"
-          class="rounded-xl bg-white/10 px-4 py-2 text-white hover:bg-white/20 transition w-full sm:w-auto ${visibleMonth === 0 ? 'opacity-40 cursor-not-allowed' : ''}"
-          ${visibleMonth === 0 ? 'disabled' : ''}
-        >
-          ← Önceki Ay
-        </button>
-
-        <div class="text-white/80 text-sm md:text-base text-center">
-          2026 yılı içindeki ayları görüntülüyorsunuz
-        </div>
-
-        <button
-          onclick="nextMonth()"
-          class="rounded-xl bg-white/10 px-4 py-2 text-white hover:bg-white/20 transition w-full sm:w-auto ${visibleMonth >= 10 ? 'opacity-40 cursor-not-allowed' : ''}"
-          ${visibleMonth >= 10 ? 'disabled' : ''}
-        >
-          Sonraki Ay →
-        </button>
-      </div>
-
-      <div class="grid lg:grid-cols-3 gap-4 md:gap-6">
-        <div class="lg:col-span-1">
-          ${getReservationSummary()}
-        </div>
-        <div class="lg:col-span-2 grid md:grid-cols-2 gap-4 md:gap-6">
-          ${buildMonth(CALENDAR_YEAR, visibleMonth)}
-          ${nextMonthVisible !== null ? buildMonth(CALENDAR_YEAR, nextMonthVisible) : '<div></div>'}
-        </div>
-      </div>
-    `;
-  }
-
-  function changeImage(index) {
-    selectedImageIndex = index;
-    renderSelectedSection();
-  }
-
-  async function loadVillas() {
-    const loading = document.getElementById("loading");
-    const error = document.getElementById("error");
-
-    try {
-      const response = await fetch("./villas.json", { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error("villas.json okunamadı.");
-      }
-
-      villas = await response.json();
-
-      if (!Array.isArray(villas) || villas.length === 0) {
-        throw new Error("Villa verisi bulunamadı.");
-      }
-
-      selectedVilla = villas[0];
-      loading.classList.add("hidden");
-      render();
-    } catch (err) {
-      loading.classList.add("hidden");
-      error.classList.remove("hidden");
-      error.textContent = "Veriler yüklenemedi. Dosya adlarını ve villas.json içeriğini kontrol et.";
-      console.error(err);
+        list.appendChild(card);
+      });
     }
-  }
-
-  function render() {
-    renderVillaList();
-    renderSelectedSection();
-  }
-
-  loadVillas();
-</script>
 
     function renderGalleryThumbs() {
-      return selectedVilla.images.map((img, index) => `
-        <button
-          onclick="changeImage(${index})"
-          class="shrink-0 rounded-xl md:rounded-2xl overflow-hidden border-2 ${selectedImageIndex === index ? 'border-[#1e3470]' : 'border-transparent'}"
-        >
-          <img src="${img}" class="w-24 h-16 md:w-36 md:h-24 object-cover" />
-        </button>
-      `).join("");
+      return selectedVilla.images.map((img, index) => {
+        return `
+          <button
+            onclick="changeImage(${index})"
+            class="shrink-0 rounded-xl md:rounded-2xl overflow-hidden border-2 ${selectedImageIndex === index ? "border-[#1e3470]" : "border-transparent"}"
+          >
+            <img src="${img}" class="w-24 h-16 md:w-36 md:h-24 object-cover" />
+          </button>
+        `;
+      }).join("");
     }
 
     function renderSelectedSection() {
@@ -900,8 +482,8 @@
         <div class="flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 mt-2">
           <button
             onclick="previousMonth()"
-            class="rounded-xl bg-white/10 px-4 py-2 text-white hover:bg-white/20 transition w-full sm:w-auto ${visibleMonth === 0 ? 'opacity-40 cursor-not-allowed' : ''}"
-            ${visibleMonth === 0 ? 'disabled' : ''}
+            class="rounded-xl bg-white/10 px-4 py-2 text-white hover:bg-white/20 transition w-full sm:w-auto ${visibleMonth === 0 ? "opacity-40 cursor-not-allowed" : ""}"
+            ${visibleMonth === 0 ? "disabled" : ""}
           >
             ← Önceki Ay
           </button>
@@ -912,8 +494,8 @@
 
           <button
             onclick="nextMonth()"
-            class="rounded-xl bg-white/10 px-4 py-2 text-white hover:bg-white/20 transition w-full sm:w-auto ${visibleMonth >= 10 ? 'opacity-40 cursor-not-allowed' : ''}"
-            ${visibleMonth >= 10 ? 'disabled' : ''}
+            class="rounded-xl bg-white/10 px-4 py-2 text-white hover:bg-white/20 transition w-full sm:w-auto ${visibleMonth >= 10 ? "opacity-40 cursor-not-allowed" : ""}"
+            ${visibleMonth >= 10 ? "disabled" : ""}
           >
             Sonraki Ay →
           </button>
@@ -925,7 +507,7 @@
           </div>
           <div class="lg:col-span-2 grid md:grid-cols-2 gap-4 md:gap-6">
             ${buildMonth(CALENDAR_YEAR, visibleMonth)}
-            ${nextMonthVisible !== null ? buildMonth(CALENDAR_YEAR, nextMonthVisible) : '<div></div>'}
+            ${nextMonthVisible !== null ? buildMonth(CALENDAR_YEAR, nextMonthVisible) : "<div></div>"}
           </div>
         </div>
       `;

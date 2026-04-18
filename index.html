@@ -186,6 +186,14 @@
       return total;
     }
 
+    function renderBadges(badges = []) {
+      return badges.map((badge) => `
+        <span class="inline-flex items-center rounded-full bg-white/92 backdrop-blur-sm text-slate-800 text-[11px] md:text-xs font-medium px-3 py-1 shadow-sm">
+          ${badge}
+        </span>
+      `).join("");
+    }
+
     function getReservationSummary() {
       if (!startDate || !endDate) {
         return `
@@ -380,6 +388,10 @@
               class="w-full h-[220px] md:h-[240px] object-cover transition duration-500 group-hover:scale-105"
             />
 
+            <div class="absolute top-3 left-3 flex flex-wrap gap-2 max-w-[70%]">
+              ${renderBadges(v.badges || [])}
+            </div>
+
             <div class="absolute top-3 right-3">
               <div class="bg-white/95 backdrop-blur-sm text-slate-900 text-sm md:text-base font-semibold px-3 py-1.5 rounded-full shadow-md">
                 ${formatPrice(cardPrice)}
@@ -462,6 +474,10 @@
                 <div class="text-slate-700 leading-7">${selectedVilla.description}</div>
                 <div class="text-slate-500">Kapasite: ${selectedVilla.capacity}</div>
                 <div class="text-xl md:text-2xl font-semibold">${formatPrice(selectedMonthPrice)} / gece</div>
+
+                <div class="flex flex-wrap gap-2">
+                  ${renderBadges(selectedVilla.badges || [])}
+                </div>
 
                 <div class="text-sm text-slate-500">
                   Takvimden önce giriş, sonra çıkış tarihini seçin. Dolu günler seçilemez.

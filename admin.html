@@ -4,51 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PlusPica Admin</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
-<body class="bg-[#1e3470] text-white">
+<body class="bg-[#1e3470] text-white" style="font-family: Arial, Helvetica, sans-serif;">
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">Rezervasyon Oluştur</h1>
 
-<div class="max-w-3xl mx-auto p-6">
+    <div class="bg-white text-slate-900 rounded-xl p-6 space-y-4">
+      <select id="villaSelect" class="w-full p-3 border rounded-lg"></select>
 
-  <h1 class="text-3xl font-bold mb-6">Rezervasyon Oluştur</h1>
+      <input id="name" placeholder="Ad Soyad" class="w-full p-3 border rounded-lg"/>
+      <input id="phone" placeholder="Telefon" class="w-full p-3 border rounded-lg"/>
 
-  <div class="bg-white text-slate-900 rounded-xl p-6 space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <input type="date" id="startDate" class="p-3 border rounded-lg"/>
+        <input type="date" id="endDate" class="p-3 border rounded-lg"/>
+      </div>
 
-    <!-- Villa -->
-    <select id="villaSelect" class="w-full p-3 border rounded-lg"></select>
+      <textarea id="note" placeholder="Not (opsiyonel)" class="w-full p-3 border rounded-lg min-h-[100px]"></textarea>
 
-    <!-- Müşteri -->
-    <input id="name" placeholder="Ad Soyad" class="w-full p-3 border rounded-lg"/>
-    <input id="phone" placeholder="Telefon" class="w-full p-3 border rounded-lg"/>
+      <div class="bg-slate-100 p-4 rounded-lg">
+        <div>Gece: <b id="nights">0</b></div>
+        <div>Toplam: <b id="total">0 ₺</b></div>
+      </div>
 
-    <!-- Tarih -->
-    <div class="grid grid-cols-2 gap-4">
-      <input type="date" id="startDate" class="p-3 border rounded-lg"/>
-      <input type="date" id="endDate" class="p-3 border rounded-lg"/>
+      <button onclick="createPDF()" class="w-full bg-green-500 text-white p-3 rounded-lg">
+        PDF İndir
+      </button>
     </div>
-
-    <!-- Not -->
-    <textarea id="note" placeholder="Not (opsiyonel)" class="w-full p-3 border rounded-lg"></textarea>
-
-    <!-- Hesap -->
-    <div class="bg-slate-100 p-4 rounded-lg">
-      <div>Gece: <b id="nights">0</b></div>
-      <div>Toplam: <b id="total">0 ₺</b></div>
-    </div>
-
-    <!-- Buton -->
-    <button onclick="createPDF()" class="w-full bg-green-500 text-white p-3 rounded-lg">
-      PDF İndir
-    </button>
-
   </div>
-
-</div>
 
 <script>
 let villas = [];
@@ -58,15 +44,14 @@ function parseISO(iso){
   return new Date(y,m-1,d);
 }
 
-function toLocalISO(date){
-  const y=date.getFullYear();
-  const m=String(date.getMonth()+1).padStart(2,"0");
-  const d=String(date.getDate()).padStart(2,"0");
-  return `${y}-${m}-${d}`;
+function formatDateTR(iso){
+  const d = parseISO(iso);
+  const aylar = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+  return `${d.getDate()} ${aylar[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function getNightPrice(villa, month){
-  return Number(villa.monthlyPrices[month] || 0);
+  return Number(villa.monthlyPrices[String(month)] || villa.monthlyPrices[month] || 0);
 }
 
 function calc(){
@@ -74,78 +59,202 @@ function calc(){
   const start = document.getElementById("startDate").value;
   const end = document.getElementById("endDate").value;
 
-  if(!start || !end) return;
+  if(!villa || !start || !end) {
+    document.getElementById("nights").innerText = "0";
+    document.getElementById("total").innerText = "0 ₺";
+    return null;
+  }
 
-  let total=0;
-  let nights=0;
-
+  let total = 0;
+  let nights = 0;
   let current = parseISO(start);
+  const endDate = parseISO(end);
 
-  while(current < parseISO(end)){
-    const month = current.getMonth()+1;
+  while(current < endDate){
+    const month = current.getMonth() + 1;
     total += getNightPrice(villa, month);
-    current.setDate(current.getDate()+1);
+    current.setDate(current.getDate() + 1);
     nights++;
   }
 
   document.getElementById("nights").innerText = nights;
-  document.getElementById("total").innerText = total.toLocaleString("tr-TR")+" ₺";
+  document.getElementById("total").innerText = total.toLocaleString("tr-TR") + " ₺";
 
-  return {total,nights};
+  return { total, nights };
 }
 
-document.getElementById("startDate").onchange=calc;
-document.getElementById("endDate").onchange=calc;
+document.getElementById("startDate").addEventListener("change", calc);
+document.getElementById("endDate").addEventListener("change", calc);
+document.getElementById("villaSelect").addEventListener("change", calc);
 
 async function load(){
-  const res = await fetch("./villas.json");
+  const res = await fetch("./villas.json", { cache: "no-store" });
   villas = await res.json();
 
   const select = document.getElementById("villaSelect");
+  select.innerHTML = "";
 
-  villas.forEach((v,i)=>{
-    const opt=document.createElement("option");
-    opt.value=i;
-    opt.innerText=v.name;
+  villas.forEach((v, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.innerText = v.name;
     select.appendChild(opt);
   });
+
+  calc();
+}
+
+function drawLabelValue(doc, label, value, x, y, width = 170) {
+  doc.setDrawColor(225, 225, 225);
+  doc.setFillColor(248, 250, 252);
+  doc.roundedRect(x, y, width, 18, 3, 3, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(90, 90, 90);
+  doc.text(label, x + 4, y + 6);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(12);
+  doc.setTextColor(20, 20, 20);
+  doc.text(String(value), x + 4, y + 13);
 }
 
 function createPDF(){
   const { jsPDF } = window.jspdf;
 
   const villa = villas[document.getElementById("villaSelect").value];
-  const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
   const start = document.getElementById("startDate").value;
   const end = document.getElementById("endDate").value;
-  const note = document.getElementById("note").value;
+  const note = document.getElementById("note").value.trim();
 
-  const result = calc();
-  if(!result) return;
-
-  const doc = new jsPDF();
-
-  doc.setFontSize(16);
-  doc.text("PLUSPICA REZERVASYON FORMU", 20, 20);
-
-  doc.setFontSize(12);
-
-  doc.text(`Villa: ${villa.name}`, 20, 40);
-  doc.text(`Müşteri: ${name}`, 20, 50);
-  doc.text(`Telefon: ${phone}`, 20, 60);
-
-  doc.text(`Giriş: ${start}`, 20, 80);
-  doc.text(`Çıkış: ${end}`, 20, 90);
-
-  doc.text(`Gece: ${result.nights}`, 20, 110);
-  doc.text(`Toplam: ${result.total.toLocaleString("tr-TR")} ₺`, 20, 120);
-
-  if(note){
-    doc.text(`Not: ${note}`, 20, 140);
+  if(!villa || !name || !phone || !start || !end){
+    alert("Lütfen villa, müşteri adı, telefon ve tarih alanlarını doldurun.");
+    return;
   }
 
-  doc.save("rezervasyon.pdf");
+  const result = calc();
+  if(!result || result.nights <= 0){
+    alert("Tarih aralığını kontrol edin.");
+    return;
+  }
+
+  const doc = new jsPDF({
+    orientation: "p",
+    unit: "mm",
+    format: "a4"
+  });
+
+  const pageWidth = 210;
+  const margin = 20;
+
+  // Üst bant
+  doc.setFillColor(30, 52, 112);
+  doc.rect(0, 0, pageWidth, 28, "F");
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.text("PLUSPICA", margin, 16);
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  doc.text("Rezervasyon Formu", margin, 22);
+
+  // Sağ üst bilgi
+  const createdAt = new Date();
+  const createdAtText = createdAt.toLocaleDateString("tr-TR") + " " + createdAt.toLocaleTimeString("tr-TR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  doc.setTextColor(60, 60, 60);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(`Olusturma Tarihi: ${createdAtText}`, margin, 38);
+
+  // Başlık
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(20, 20, 20);
+  doc.text("Rezervasyon Detaylari", margin, 50);
+
+  // Villa kutusu
+  doc.setDrawColor(225, 225, 225);
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(margin, 56, 170, 20, 3, 3, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(90, 90, 90);
+  doc.text("Villa", margin + 4, 63);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(20, 20, 20);
+  doc.text(villa.name, margin + 4, 71);
+
+  // Müşteri bilgileri
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text("Musteri Bilgileri", margin, 90);
+
+  drawLabelValue(doc, "Ad Soyad", name, margin, 96, 82);
+  drawLabelValue(doc, "Telefon", phone, 108, 96, 82);
+
+  // Konaklama bilgileri
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text("Konaklama Bilgileri", margin, 130);
+
+  drawLabelValue(doc, "Giris Tarihi", formatDateTR(start), margin, 136, 82);
+  drawLabelValue(doc, "Cikis Tarihi", formatDateTR(end), 108, 136, 82);
+
+  drawLabelValue(doc, "Gece Sayisi", result.nights, margin, 160, 82);
+  drawLabelValue(doc, "Gecelik Ortalama / Sistem", `${Math.round(result.total / result.nights).toLocaleString("tr-TR")} ₺`, 108, 160, 82);
+
+  // Toplam tutar kutusu
+  doc.setFillColor(232, 245, 237);
+  doc.setDrawColor(190, 227, 200);
+  doc.roundedRect(margin, 186, 170, 24, 4, 4, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(60, 110, 75);
+  doc.text("Toplam Tutar", margin + 5, 195);
+
+  doc.setFontSize(18);
+  doc.setTextColor(15, 85, 45);
+  doc.text(`${result.total.toLocaleString("tr-TR")} ₺`, margin + 5, 205);
+
+  // Not alanı
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(20, 20, 20);
+  doc.text("Notlar", margin, 225);
+
+  doc.setDrawColor(225, 225, 225);
+  doc.setFillColor(248, 250, 252);
+  doc.roundedRect(margin, 231, 170, 28, 3, 3, "FD");
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.setTextColor(50, 50, 50);
+
+  const noteText = note || "Not girilmedi.";
+  const splitNote = doc.splitTextToSize(noteText, 160);
+  doc.text(splitNote, margin + 4, 239);
+
+  // Alt bilgi
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(9);
+  doc.setTextColor(120, 120, 120);
+  doc.text("Bu belge PlusPica rezervasyon on hazirlik formudur.", margin, 276);
+
+  const fileName = `rezervasyon-${villa.name.toLowerCase().replaceAll(" ", "-")}.pdf`;
+  doc.save(fileName);
 }
 
 load();

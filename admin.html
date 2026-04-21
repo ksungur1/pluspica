@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PlusPica Admin</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body class="bg-[#1e3470] text-white">
+
+<div class="max-w-3xl mx-auto p-6">
+
+  <h1 class="text-3xl font-bold mb-6">Rezervasyon Oluştur</h1>
+
+  <div class="bg-white text-slate-900 rounded-xl p-6 space-y-4">
+
+    <!-- Villa -->
+    <select id="villaSelect" class="w-full p-3 border rounded-lg"></select>
+
+    <!-- Müşteri -->
+    <input id="name" placeholder="Ad Soyad" class="w-full p-3 border rounded-lg"/>
+    <input id="phone" placeholder="Telefon" class="w-full p-3 border rounded-lg"/>
+
+    <!-- Tarih -->
+    <div class="grid grid-cols-2 gap-4">
+      <input type="date" id="startDate" class="p-3 border rounded-lg"/>
+      <input type="date" id="endDate" class="p-3 border rounded-lg"/>
+    </div>
+
+    <!-- Not -->
+    <textarea id="note" placeholder="Not (opsiyonel)" class="w-full p-3 border rounded-lg"></textarea>
+
+    <!-- Hesap -->
+    <div class="bg-slate-100 p-4 rounded-lg">
+      <div>Gece: <b id="nights">0</b></div>
+      <div>Toplam: <b id="total">0 ₺</b></div>
+    </div>
+
+    <!-- Buton -->
+    <button onclick="createPDF()" class="w-full bg-green-500 text-white p-3 rounded-lg">
+      PDF İndir
+    </button>
+
+  </div>
+
+</div>
+
+<script>
+let villas = [];
+
+function parseISO(iso){
+  const [y,m,d]=iso.split("-").map(Number);
+  return new Date(y,m-1,d);
+}
+
+function toLocalISO(date){
+  const y=date.getFullYear();
+  const m=String(date.getMonth()+1).padStart(2,"0");
+  const d=String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+
+function getNightPrice(villa, month){
+  return Number(villa.monthlyPrices[month] || 0);
+}
+
+function calc(){
+  const villa = villas[document.getElementById("villaSelect").value];
+  const start = document.getElementById("startDate").value;
+  const end = document.getElementById("endDate").value;
+
+  if(!start || !end) return;
+
+  let total=0;
+  let nights=0;
+
+  let current = parseISO(start);
+
+  while(current < parseISO(end)){
+    const month = current.getMonth()+1;
+    total += getNightPrice(villa, month);
+    current.setDate(current.getDate()+1);
+    nights++;
+  }
+
+  document.getElementById("nights").innerText = nights;
+  document.getElementById("total").innerText = total.toLocaleString("tr-TR")+" ₺";
+
+  return {total,nights};
+}
+
+document.getElementById("startDate").onchange=calc;
+document.getElementById("endDate").onchange=calc;
+
+async function load(){
+  const res = await fetch("./villas.json");
+  villas = await res.json();
+
+  const select = document.getElementById("villaSelect");
+
+  villas.forEach((v,i)=>{
+    const opt=document.createElement("option");
+    opt.value=i;
+    opt.innerText=v.name;
+    select.appendChild(opt);
+  });
+}
+
+function createPDF(){
+  const { jsPDF } = window.jspdf;
+
+  const villa = villas[document.getElementById("villaSelect").value];
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+  const start = document.getElementById("startDate").value;
+  const end = document.getElementById("endDate").value;
+  const note = document.getElementById("note").value;
+
+  const result = calc();
+  if(!result) return;
+
+  const doc = new jsPDF();
+
+  doc.setFontSize(16);
+  doc.text("PLUSPICA REZERVASYON FORMU", 20, 20);
+
+  doc.setFontSize(12);
+
+  doc.text(`Villa: ${villa.name}`, 20, 40);
+  doc.text(`Müşteri: ${name}`, 20, 50);
+  doc.text(`Telefon: ${phone}`, 20, 60);
+
+  doc.text(`Giriş: ${start}`, 20, 80);
+  doc.text(`Çıkış: ${end}`, 20, 90);
+
+  doc.text(`Gece: ${result.nights}`, 20, 110);
+  doc.text(`Toplam: ${result.total.toLocaleString("tr-TR")} ₺`, 20, 120);
+
+  if(note){
+    doc.text(`Not: ${note}`, 20, 140);
+  }
+
+  doc.save("rezervasyon.pdf");
+}
+
+load();
+</script>
+
+</body>
+</html>

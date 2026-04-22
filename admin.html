@@ -28,7 +28,7 @@
         <input id="remaining" type="text" placeholder="Kalan Ödeme otomatik hesaplanır" class="w-full p-3 border rounded-lg bg-slate-100" readonly/>
       </div>
 
-      <textarea id="note" placeholder="Not" class="w-full p-3 border rounded-lg min-h-[110px]"></textarea>
+      <textarea id="note" placeholder="Not" class="w-full p-3 border rounded-lg min-h-[90px]"></textarea>
 
       <div class="bg-slate-100 p-4 rounded-lg space-y-1">
         <div>Gece: <b id="nights">0</b></div>
@@ -71,6 +71,16 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function makeReservationNo() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      const h = String(now.getHours()).padStart(2, "0");
+      const min = String(now.getMinutes()).padStart(2, "0");
+      return `PP-${y}${m}${d}-${h}${min}`;
     }
 
     function calc() {
@@ -132,6 +142,7 @@
     document.getElementById("deposit").addEventListener("input", calc);
 
     function buildReservationHtml({
+      reservationNo,
       villa,
       name,
       tcno,
@@ -156,31 +167,36 @@
 <style>
   @page {
     size: A4;
-    margin: 16mm;
+    margin: 12mm;
   }
 
   * {
     box-sizing: border-box;
   }
 
-  body {
+  html, body {
     margin: 0;
+    padding: 0;
     background: #ffffff;
     color: #0f172a;
     font-family: Arial, Helvetica, sans-serif;
   }
 
+  body {
+    font-size: 14px;
+  }
+
   .sheet {
     width: 100%;
     border: 1px solid #dbe3ef;
-    border-radius: 24px;
+    border-radius: 18px;
     overflow: hidden;
   }
 
   .topbar {
     background: #1e3470;
     color: #ffffff;
-    padding: 28px 32px;
+    padding: 18px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -189,163 +205,155 @@
   .brand {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
   }
 
   .brand img {
-    height: 110px;
+    height: 130px;
     width: auto;
     object-fit: contain;
   }
 
   .brand-text h1 {
     margin: 0;
-    font-size: 28px;
-    line-height: 1.1;
+    font-size: 24px;
+    line-height: 1.05;
   }
 
   .brand-text p {
-    margin: 8px 0 0;
-    font-size: 14px;
-    opacity: .9;
+    margin: 6px 0 0;
+    font-size: 13px;
+    opacity: .92;
   }
 
   .meta {
     text-align: right;
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 12px;
+    line-height: 1.45;
   }
 
   .meta strong {
     display: block;
-    font-size: 16px;
-    margin-top: 4px;
+    font-size: 14px;
+    margin-top: 3px;
   }
 
   .content {
-    padding: 30px;
+    padding: 20px 22px 18px;
   }
 
   .title {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 700;
-    margin: 0 0 20px;
+    margin: 0 0 14px;
   }
 
   .villa-box {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
   }
 
   .label {
-    font-size: 12px;
+    font-size: 11px;
     color: #64748b;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
   }
 
   .value {
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 700;
   }
 
   .section-title {
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 700;
-    margin: 28px 0 14px;
+    margin: 16px 0 10px;
   }
 
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    gap: 10px;
   }
 
   .grid-3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 14px;
+    gap: 10px;
   }
 
   .card {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 16px 18px;
-    min-height: 90px;
+    border-radius: 14px;
+    padding: 12px 14px;
+    min-height: 68px;
   }
 
   .card .big {
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 600;
     color: #111827;
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
   .total {
-    margin-top: 18px;
+    margin-top: 12px;
     background: #ecfdf5;
     border: 1px solid #bbf7d0;
-    border-radius: 18px;
-    padding: 18px 20px;
+    border-radius: 16px;
+    padding: 14px 16px;
   }
 
   .total .ttl-label {
     color: #166534;
-    font-size: 13px;
-    margin-bottom: 8px;
+    font-size: 12px;
+    margin-bottom: 6px;
   }
 
   .total .ttl-value {
     color: #166534;
-    font-size: 34px;
+    font-size: 28px;
     font-weight: 800;
   }
 
-  .payment-box {
-    margin-top: 18px;
-  }
-
-  .payment-box .card {
-    min-height: 96px;
-  }
-
   .note-box {
-    min-height: 100px;
+    min-height: 72px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 16px 18px;
-    line-height: 1.7;
+    border-radius: 14px;
+    padding: 12px 14px;
+    line-height: 1.55;
     white-space: pre-wrap;
   }
 
   .signature-wrap {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 28px;
-    margin-top: 36px;
-    padding-top: 10px;
+    gap: 24px;
+    margin-top: 22px;
+    padding-top: 4px;
   }
 
   .signature-box {
-    min-height: 90px;
+    min-height: 62px;
   }
 
   .signature-line {
     border-top: 1px solid #94a3b8;
-    margin-top: 50px;
-    padding-top: 8px;
-    font-size: 13px;
+    margin-top: 36px;
+    padding-top: 6px;
+    font-size: 12px;
     color: #475569;
     text-align: center;
   }
 
   .footer {
-    margin-top: 28px;
-    font-size: 12px;
+    margin-top: 18px;
+    font-size: 11px;
     color: #64748b;
     font-style: italic;
   }
@@ -353,7 +361,7 @@
   @media print {
     html, body {
       width: 210mm;
-      min-height: 297mm;
+      height: 297mm;
     }
 
     body {
@@ -374,7 +382,9 @@
         </div>
       </div>
       <div class="meta">
-        Oluşturma Tarihi
+        <div>Rezervasyon No</div>
+        <strong>${escapeHtml(reservationNo)}</strong>
+        <div style="margin-top:8px;">Oluşturma Tarihi</div>
         <strong>${escapeHtml(createdAt)}</strong>
       </div>
     </div>
@@ -433,7 +443,7 @@
       </div>
 
       <div class="section-title">Ödeme Bilgileri</div>
-      <div class="grid-3 payment-box">
+      <div class="grid-3">
         <div class="card">
           <div class="label">Toplam Konaklama Bedeli</div>
           <div class="big">${escapeHtml(total)}</div>
@@ -483,7 +493,7 @@
         return;
       }
 
-      if (tcno && !/^\d{11}$/.test(tcno)) {
+      if (tcno && !/^\\d{11}$/.test(tcno)) {
         alert("T.C. Kimlik No 11 haneli olmalıdır.");
         return;
       }
@@ -495,8 +505,10 @@
       }
 
       const createdAt = new Date().toLocaleString("tr-TR");
+      const reservationNo = makeReservationNo();
 
       const html = buildReservationHtml({
+        reservationNo,
         villa,
         name,
         tcno,

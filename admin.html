@@ -1,544 +1,163 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PlusPica Admin</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlusPica Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
 
-<body class="bg-[#1e3470] text-white font-sans">
-  <div class="max-w-3xl mx-auto p-6">
-    <h1 class="text-3xl font-bold mb-6">Rezervasyon Oluştur</h1>
-
-    <div class="bg-white text-slate-900 rounded-xl p-6 space-y-4 shadow-xl">
-      <select id="villaSelect" class="w-full p-3 border rounded-lg"></select>
-
-      <input id="name" placeholder="Ad Soyad" class="w-full p-3 border rounded-lg"/>
-      <input id="tcno" placeholder="T.C. Kimlik No" class="w-full p-3 border rounded-lg" maxlength="11"/>
-      <input id="phone" placeholder="Telefon" class="w-full p-3 border rounded-lg"/>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input type="date" id="startDate" class="p-3 border rounded-lg"/>
-        <input type="date" id="endDate" class="p-3 border rounded-lg"/>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input id="deposit" type="number" min="0" placeholder="Kapora Tutarı" class="w-full p-3 border rounded-lg"/>
-        <input id="remaining" type="text" placeholder="Kalan Ödeme otomatik hesaplanır" class="w-full p-3 border rounded-lg bg-slate-100" readonly/>
-      </div>
-
-      <textarea id="note" placeholder="Not" class="w-full p-3 border rounded-lg min-h-[90px]"></textarea>
-
-      <div class="bg-slate-100 p-4 rounded-lg space-y-1">
-        <div>Gece: <b id="nights">0</b></div>
-        <div>Toplam: <b id="total">0 ₺</b></div>
-        <div>Kalan Ödeme: <b id="remainingPreview">0 ₺</b></div>
-      </div>
-
-      <button onclick="createPDF()" class="w-full bg-green-500 hover:bg-green-600 text-white p-3 rounded-lg transition">
-        PDF / Yazdır Belgesi Oluştur
-      </button>
-    </div>
-  </div>
-
-  <script>
-    let villas = [];
-
-    function parseISO(iso) {
-      const [y, m, d] = iso.split("-").map(Number);
-      return new Date(y, m - 1, d);
-    }
-
-    function formatDateTR(iso) {
-      const d = parseISO(iso);
-      const aylar = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
-      return `${d.getDate()} ${aylar[d.getMonth()]} ${d.getFullYear()}`;
-    }
-
-    function getNightPrice(villa, month) {
-      return Number(villa.monthlyPrices?.[String(month)] || villa.monthlyPrices?.[month] || 0);
-    }
-
-    function formatCurrency(value) {
-      return Number(value || 0).toLocaleString("tr-TR") + " ₺";
-    }
-
-    function escapeHtml(str = "") {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function makeReservationNo() {
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, "0");
-      const d = String(now.getDate()).padStart(2, "0");
-      const h = String(now.getHours()).padStart(2, "0");
-      const min = String(now.getMinutes()).padStart(2, "0");
-      return `PP-${y}${m}${d}-${h}${min}`;
-    }
-
-    function calc() {
-      const villa = villas[document.getElementById("villaSelect").value];
-      const start = document.getElementById("startDate").value;
-      const end = document.getElementById("endDate").value;
-      const deposit = Number(document.getElementById("deposit").value || 0);
-
-      if (!villa || !start || !end) {
-        document.getElementById("nights").innerText = "0";
-        document.getElementById("total").innerText = "0 ₺";
-        document.getElementById("remaining").value = "0 ₺";
-        document.getElementById("remainingPreview").innerText = "0 ₺";
-        return null;
-      }
-
-      let total = 0;
-      let nights = 0;
-
-      let current = parseISO(start);
-      const endDate = parseISO(end);
-
-      while (current < endDate) {
-        total += getNightPrice(villa, current.getMonth() + 1);
-        current.setDate(current.getDate() + 1);
-        nights++;
-      }
-
-      const remaining = Math.max(total - deposit, 0);
-
-      document.getElementById("nights").innerText = nights;
-      document.getElementById("total").innerText = formatCurrency(total);
-      document.getElementById("remaining").value = formatCurrency(remaining);
-      document.getElementById("remainingPreview").innerText = formatCurrency(remaining);
-
-      return { total, nights, remaining, deposit };
-    }
-
-    async function load() {
-      const res = await fetch("./villas.json", { cache: "no-store" });
-      villas = await res.json();
-
-      const select = document.getElementById("villaSelect");
-      select.innerHTML = "";
-
-      villas.forEach((villa, i) => {
-        const opt = document.createElement("option");
-        opt.value = i;
-        opt.innerText = villa.name;
-        select.appendChild(opt);
-      });
-
-      calc();
-    }
-
-    document.getElementById("villaSelect").addEventListener("change", calc);
-    document.getElementById("startDate").addEventListener("change", calc);
-    document.getElementById("endDate").addEventListener("change", calc);
-    document.getElementById("deposit").addEventListener("input", calc);
-
-    function buildReservationHtml({
-      reservationNo,
-      villa,
-      name,
-      tcno,
-      phone,
-      start,
-      end,
-      nights,
-      avg,
-      total,
-      deposit,
-      remaining,
-      note,
-      createdAt
-    }) {
-      return `
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Rezervasyon Formu</title>
-<style>
-  @page {
-    size: A4;
-    margin: 12mm;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #ffffff;
-    color: #0f172a;
-    font-family: Arial, Helvetica, sans-serif;
-  }
-
-  body {
-    font-size: 14px;
-  }
-
-  .sheet {
-    width: 100%;
-    border: 1px solid #dbe3ef;
-    border-radius: 18px;
-    overflow: hidden;
-  }
-
-  .topbar {
-    background: #1e3470;
-    color: #ffffff;
-    padding: 18px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .brand img {
-    height: 130px;
-    width: auto;
-    object-fit: contain;
-  }
-
-  .brand-text h1 {
-    margin: 0;
-    font-size: 24px;
-    line-height: 1.05;
-  }
-
-  .brand-text p {
-    margin: 6px 0 0;
-    font-size: 13px;
-    opacity: .92;
-  }
-
-  .meta {
-    text-align: right;
-    font-size: 12px;
-    line-height: 1.45;
-  }
-
-  .meta strong {
-    display: block;
-    font-size: 14px;
-    margin-top: 3px;
-  }
-
-  .content {
-    padding: 20px 22px 18px;
-  }
-
-  .title {
-    font-size: 22px;
-    font-weight: 700;
-    margin: 0 0 14px;
-  }
-
-  .villa-box {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 16px;
-  }
-
-  .label {
-    font-size: 11px;
-    color: #64748b;
-    margin-bottom: 5px;
-  }
-
-  .value {
-    font-size: 22px;
-    font-weight: 700;
-  }
-
-  .section-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 16px 0 10px;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .grid-3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-  }
-
-  .card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 12px 14px;
-    min-height: 68px;
-  }
-
-  .card .big {
-    font-size: 15px;
-    font-weight: 600;
-    color: #111827;
-    line-height: 1.4;
-  }
-
-  .total {
-    margin-top: 12px;
-    background: #ecfdf5;
-    border: 1px solid #bbf7d0;
-    border-radius: 16px;
-    padding: 14px 16px;
-  }
-
-  .total .ttl-label {
-    color: #166534;
-    font-size: 12px;
-    margin-bottom: 6px;
-  }
-
-  .total .ttl-value {
-    color: #166534;
-    font-size: 28px;
-    font-weight: 800;
-  }
-
-  .note-box {
-    min-height: 72px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 12px 14px;
-    line-height: 1.55;
-    white-space: pre-wrap;
-  }
-
-  .signature-wrap {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 22px;
-    padding-top: 4px;
-  }
-
-  .signature-box {
-    min-height: 62px;
-  }
-
-  .signature-line {
-    border-top: 1px solid #94a3b8;
-    margin-top: 36px;
-    padding-top: 6px;
-    font-size: 12px;
-    color: #475569;
-    text-align: center;
-  }
-
-  .footer {
-    margin-top: 18px;
-    font-size: 11px;
-    color: #64748b;
-    font-style: italic;
-  }
-
-  @media print {
-    html, body {
-      width: 210mm;
-      height: 297mm;
-    }
-
-    body {
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-  }
-</style>
-</head>
-<body>
-  <div class="sheet">
-    <div class="topbar">
-      <div class="brand">
-        <img src="logo.png" alt="PlusPica Logo">
-        <div class="brand-text">
-          <h1>Rezervasyon Formu</h1>
-          <p>PlusPica</p>
-        </div>
-      </div>
-      <div class="meta">
-        <div>Rezervasyon No</div>
-        <strong>${escapeHtml(reservationNo)}</strong>
-        <div style="margin-top:8px;">Oluşturma Tarihi</div>
-        <strong>${escapeHtml(createdAt)}</strong>
-      </div>
-    </div>
-
-    <div class="content">
-      <div class="title">Rezervasyon Detayları</div>
-
-      <div class="villa-box">
-        <div class="label">Villa</div>
-        <div class="value">${escapeHtml(villa.name)}</div>
-      </div>
-
-      <div class="section-title">Müşteri Bilgileri</div>
-      <div class="grid">
-        <div class="card">
-          <div class="label">Ad Soyad</div>
-          <div class="big">${escapeHtml(name)}</div>
-        </div>
-        <div class="card">
-          <div class="label">Telefon</div>
-          <div class="big">${escapeHtml(phone)}</div>
-        </div>
-        <div class="card">
-          <div class="label">T.C. Kimlik No</div>
-          <div class="big">${escapeHtml(tcno || "-")}</div>
-        </div>
-        <div class="card">
-          <div class="label">Belge Tipi</div>
-          <div class="big">Rezervasyon Ön Hazırlık Formu</div>
-        </div>
-      </div>
-
-      <div class="section-title">Konaklama Bilgileri</div>
-      <div class="grid">
-        <div class="card">
-          <div class="label">Giriş Tarihi</div>
-          <div class="big">${escapeHtml(start)}</div>
-        </div>
-        <div class="card">
-          <div class="label">Çıkış Tarihi</div>
-          <div class="big">${escapeHtml(end)}</div>
-        </div>
-        <div class="card">
-          <div class="label">Gece Sayısı</div>
-          <div class="big">${escapeHtml(String(nights))} gece</div>
-        </div>
-        <div class="card">
-          <div class="label">Gecelik Ortalama</div>
-          <div class="big">${escapeHtml(avg)}</div>
-        </div>
-      </div>
-
-      <div class="total">
-        <div class="ttl-label">Toplam Tutar</div>
-        <div class="ttl-value">${escapeHtml(total)}</div>
-      </div>
-
-      <div class="section-title">Ödeme Bilgileri</div>
-      <div class="grid-3">
-        <div class="card">
-          <div class="label">Toplam Konaklama Bedeli</div>
-          <div class="big">${escapeHtml(total)}</div>
-        </div>
-        <div class="card">
-          <div class="label">Kapora</div>
-          <div class="big">${escapeHtml(deposit)}</div>
-        </div>
-        <div class="card">
-          <div class="label">Kalan Ödeme</div>
-          <div class="big">${escapeHtml(remaining)}</div>
-        </div>
-      </div>
-
-      <div class="section-title">Notlar</div>
-      <div class="note-box">${escapeHtml(note || "Not girilmedi.")}</div>
-
-      <div class="signature-wrap">
-        <div class="signature-box">
-          <div class="signature-line">Müşteri İmzası</div>
-        </div>
-        <div class="signature-box">
-          <div class="signature-line">Yetkili İmzası</div>
-        </div>
-      </div>
-
-      <div class="footer">Bu belge PlusPica rezervasyon ön hazırlık formudur.</div>
-    </div>
-  </div>
-</body>
-</html>
-      `;
-    }
-
-    function createPDF() {
-      const villa = villas[document.getElementById("villaSelect").value];
-      const name = document.getElementById("name").value.trim();
-      const tcno = document.getElementById("tcno").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const start = document.getElementById("startDate").value;
-      const end = document.getElementById("endDate").value;
-      const note = document.getElementById("note").value.trim();
-      const depositValue = Number(document.getElementById("deposit").value || 0);
-
-      if (!villa || !name || !phone || !start || !end) {
-        alert("Lütfen villa, müşteri adı, telefon ve tarih alanlarını doldurun.");
-        return;
-      }
-
-      if (tcno && !/^\\d{11}$/.test(tcno)) {
-        alert("T.C. Kimlik No 11 haneli olmalıdır.");
-        return;
-      }
-
-      const result = calc();
-      if (!result || result.nights <= 0) {
-        alert("Tarih aralığını kontrol edin.");
-        return;
-      }
-
-      const createdAt = new Date().toLocaleString("tr-TR");
-      const reservationNo = makeReservationNo();
-
-      const html = buildReservationHtml({
-        reservationNo,
-        villa,
-        name,
-        tcno,
-        phone,
-        start: formatDateTR(start),
-        end: formatDateTR(end),
-        nights: result.nights,
-        avg: formatCurrency(Math.round(result.total / result.nights)),
-        total: formatCurrency(result.total),
-        deposit: formatCurrency(depositValue),
-        remaining: formatCurrency(result.remaining),
-        note,
-        createdAt
-      });
-
-      const printWindow = window.open("", "_blank");
-
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-
-      printWindow.onload = () => {
-        printWindow.focus();
-        setTimeout(() => {
-          printWindow.print();
-        }, 500);
-      };
-    }
-
-    load();
-  </script>
+<body class="bg-[#1e3470] text-white">
+
+<div class="max-w-3xl mx-auto p-6">
+
+<h1 class="text-3xl font-bold mb-6 text-center">Rezervasyon Oluştur</h1>
+
+<div class="bg-white text-slate-900 rounded-xl p-6 space-y-4">
+
+<select id="villa" class="w-full p-3 border rounded-lg">
+<option>Villa Rüya-1</option>
+<option>Villa Rüya-2</option>
+<option>Villa Rüya-3</option>
+<option>Villa Rüya-4</option>
+</select>
+
+<input id="name" placeholder="Ad Soyad" class="w-full p-3 border rounded-lg">
+<input id="tcno" placeholder="T.C. Kimlik No" class="w-full p-3 border rounded-lg">
+<input id="phone" placeholder="Telefon" class="w-full p-3 border rounded-lg">
+
+<div class="grid grid-cols-2 gap-3">
+<input type="date" id="checkin" class="p-3 border rounded-lg">
+<input type="date" id="checkout" class="p-3 border rounded-lg">
+</div>
+
+<input id="deposit" placeholder="Kapora Tutarı" class="w-full p-3 border rounded-lg">
+
+<textarea id="note" placeholder="Not" class="w-full p-3 border rounded-lg"></textarea>
+
+<div class="bg-gray-100 p-4 rounded-lg">
+<p id="night"></p>
+<p id="total"></p>
+<p id="remaining"></p>
+</div>
+
+<button onclick="generatePDF()" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold">
+PDF Oluştur
+</button>
+
+</div>
+</div>
+
+<script>
+const { jsPDF } = window.jspdf;
+
+function generatePDF() {
+
+const name = document.getElementById("name").value;
+const tcnoRaw = document.getElementById("tcno").value;
+const tcno = tcnoRaw.replace(/\D/g, ""); // düzeltildi
+const phone = document.getElementById("phone").value;
+const villa = document.getElementById("villa").value;
+const checkin = document.getElementById("checkin").value;
+const checkout = document.getElementById("checkout").value;
+const deposit = Number(document.getElementById("deposit").value) || 0;
+const note = document.getElementById("note").value;
+
+if (!name || !checkin || !checkout) {
+alert("Lütfen gerekli alanları doldurun.");
+return;
+}
+
+if (tcno && tcno.length !== 11) {
+alert("T.C. Kimlik No 11 haneli olmalıdır.");
+return;
+}
+
+const nights = Math.floor((new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
+const price = 8000; // sabit örnek
+const total = nights * price;
+const remaining = total - deposit;
+
+const rezervasyonNo = "PP-" + Date.now();
+
+const doc = new jsPDF();
+
+doc.setFont("helvetica");
+
+let y = 20;
+
+// LOGO
+doc.setFillColor(30, 52, 112);
+doc.rect(0, 0, 210, 30, "F");
+
+doc.setTextColor(255,255,255);
+doc.setFontSize(18);
+doc.text("PLUSPICA", 15, 18);
+
+doc.setFontSize(10);
+doc.text("Rezervasyon Formu", 15, 24);
+
+doc.setFontSize(9);
+doc.text(new Date().toLocaleString("tr-TR"), 150, 18);
+
+y = 40;
+
+// BAŞLIK
+doc.setTextColor(0,0,0);
+doc.setFontSize(14);
+doc.text("Rezervasyon Detayları", 15, y);
+
+y += 10;
+
+doc.setFontSize(10);
+
+doc.text(`Rezervasyon No: ${rezervasyonNo}`, 15, y); y+=7;
+doc.text(`Villa: ${villa}`, 15, y); y+=7;
+
+y+=3;
+
+doc.text("Müşteri Bilgileri", 15, y); y+=7;
+doc.text(`Ad Soyad: ${name}`, 15, y); y+=6;
+doc.text(`T.C.: ${tcno}`, 15, y); y+=6;
+doc.text(`Telefon: ${phone}`, 15, y); y+=10;
+
+doc.text("Konaklama Bilgileri", 15, y); y+=7;
+doc.text(`Giriş: ${checkin}`, 15, y); y+=6;
+doc.text(`Çıkış: ${checkout}`, 15, y); y+=6;
+doc.text(`Gece: ${nights}`, 15, y); y+=10;
+
+// Fiyat kutusu
+doc.setFillColor(230,240,230);
+doc.rect(15, y, 180, 25, "F");
+
+doc.setFontSize(12);
+doc.text(`Toplam: ${total} TL`, 20, y+10);
+doc.text(`Kapora: ${deposit} TL`, 20, y+17);
+doc.text(`Kalan: ${remaining} TL`, 110, y+14);
+
+y += 35;
+
+// Not
+doc.setFontSize(10);
+doc.text("Not:", 15, y);
+y+=5;
+doc.text(note || "-", 15, y);
+
+y += 20;
+
+// İmza alanı
+doc.line(15, y, 80, y);
+doc.line(120, y, 185, y);
+
+doc.text("Müşteri İmza", 20, y+5);
+doc.text("Yetkili İmza", 130, y+5);
+
+doc.save(`rezervasyon-${villa}.pdf`);
+}
+</script>
+
 </body>
 </html>

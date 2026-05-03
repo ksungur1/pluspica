@@ -44,11 +44,33 @@
     <button onclick="createPDF()" class="w-full bg-green-500 text-white p-3 rounded-lg">
       PDF Oluştur
     </button>
+    <div class="bg-white text-black rounded-xl p-6 mt-6">
+  <h2 class="text-xl font-bold mb-4">Rezervasyon Listesi</h2>
+  <div id="list"></div>
+</div>
 
   </div>
 </div>
 
 <script>
+  async function loadReservations() {
+  const res = await fetch(API);
+  const data = await res.json();
+
+  let html = "";
+
+  data.reverse().forEach(r => {
+    html += `
+      <div class="border p-3 mb-2 rounded">
+        <b>${r["Ad Soyad"]}</b> - ${r["Villa"]}<br>
+        ${r["Giriş Tarihi"]} → ${r["Çıkış Tarihi"]}<br>
+        ${r["Toplam Tutar"]}
+      </div>
+    `;
+  });
+
+  document.getElementById("list").innerHTML = html;
+}
 let villas = [];
 const API = "https://script.google.com/macros/s/AKfycbz0So0p3eadwSXBlE2TsvoQjmVbiW0lLzWPf_HGOLQwtWY4DmycdXm-1UaawINS3Ed5QA/exec";
 
@@ -416,6 +438,7 @@ document.querySelectorAll("input,select").forEach(el=>{
 });
 
 load();
+loadReservations();
 </script>
 
 </body>

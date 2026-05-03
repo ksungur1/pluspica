@@ -73,7 +73,7 @@ data.reverse().forEach(r => {
       </div>
 
       <div class="text-sm text-gray-600 mb-2">
-        📅 ${r["Giriş Tarihi"] || "-"} → ${r["Çıkış Tarihi"] || "-"}
+        📅 ${prettyDate(r["Giriş Tarihi"])} → ${prettyDate(r["Çıkış Tarihi"])}
       </div>
 
       <div class="grid grid-cols-3 gap-2 text-sm">
@@ -102,8 +102,11 @@ function parseDate(d){
   return new Date(y,m-1,day);
 }
 
-function formatTR(d){
-  return new Date(d).toLocaleDateString("tr-TR");
+function prettyDate(value) {
+  if (!value) return "-";
+  const d = new Date(value);
+  if (isNaN(d)) return value;
+  return d.toLocaleDateString("tr-TR");
 }
 
 function formatMoney(v){

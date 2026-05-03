@@ -44,6 +44,7 @@
 
   <script>
     let villas = [];
+    const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz0So0p3eadwSXBlE2TsvoQjmVbiW0lLzWPf_HGOLQwtWY4DmycdXm-1UaawINS3Ed5QA/exec";
 
     function parseISO(iso) {
       const [y, m, d] = iso.split("-").map(Number);
@@ -196,6 +197,9 @@
   body {
     font-size: 14px;
   }
+  <button onclick="saveReservation()" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition">
+  Rezervasyonu Kaydet
+</button>
 
   .sheet {
     width: 100%;
@@ -498,6 +502,56 @@
 </html>
       `;
     }
+    async function saveReservation() {
+  const villa = villas[document.getElementById("villaSelect").value];
+  const name = document.getElementById("name").value.trim();
+  const tcno = document.getElementById("tcno").value.replace(/\D/g, "");
+  const phone = document.getElementById("phone").value.trim();
+  const start = document.getElementById("startDate").value;
+  const end = document.getElementById("endDate").value;
+  const note = document.getElementById("note").value.trim();
+  const result = calc();
+
+  if (!villa || !name || !phone || !start || !end || !result) {
+    alert("Lütfen gerekli alanları doldurun.");
+    return;
+  }
+
+  const reservationNo = makeReservationNo(villa.name);
+  const createdAt = new Date().toLocaleString("tr-TR");
+
+  const payload = {
+    rezervasyonNo: reservationNo,
+    olusturmaTarihi: createdAt,
+    villa: villa.name,
+    adSoyad: name,
+    tcno: tcno || "-",
+    telefon: phone,
+    giris: formatDateTR(start),
+    cikis: formatDateTR(end),
+    gece: result.nights,
+    toplam: formatCurrency(result.total),
+    kapora: formatCurrency(result.deposit),
+    kalan: formatCurrency(result.remaining),
+    not: note || "-"
+  };
+
+  try {
+    await fetch(SHEET_WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    alert("Rezervasyon Google Sheets'e kaydedildi.");
+  } catch (error) {
+    alert("Kayıt sırasında hata oluştu.");
+    console.error(error);
+  }
+}
 
     function createPDF() {
       const villa = villas[document.getElementById("villaSelect").value];

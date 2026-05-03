@@ -610,8 +610,11 @@ function getBookedMap(villa) {
           throw new Error("villas.json okunamadı.");
         }
 
-        villas = await response.json();
-//await loadReservations();
+villas = await response.json();
+
+await loadReservations();
+
+console.log("Rezervasyonlar:", reservations);
 
         if (!Array.isArray(villas) || villas.length === 0) {
           throw new Error("Villa verisi bulunamadı.");

@@ -164,25 +164,32 @@ async function load(){
     sel.appendChild(o);
   });
 }
-
 async function saveReservation(){
-  let data=calc();
-  if(!data){ alert("Eksik alan"); return; }
+  let data = calc();
+  if(!data){ 
+    alert("Eksik alan"); 
+    return; 
+  }
 
-  const payload={
+  const customerName = document.getElementById("name").value.trim();
+  const customerTc = document.getElementById("tcno").value.trim();
+  const customerPhone = document.getElementById("phone").value.trim();
+  const selectedVilla = villas[document.getElementById("villaSelect").value];
+
+  const payload = {
     rezervasyonNo: reservationNo(),
-    olusturmaTarihi:new Date().toLocaleString("tr-TR"),
-    villa:villas[villaSelect.value].name,
-    adSoyad:name.value,
-    tcno:tcno.value,
-    telefon:phone.value,
-    giris:formatTR(startDate.value),
-    cikis:formatTR(endDate.value),
-    gece:data.nights,
-    toplam:data.total,
-    kapora:data.deposit,
-    kalan:data.remaining,
-    not:note.value
+    olusturmaTarihi: new Date().toLocaleString("tr-TR"),
+    villa: selectedVilla.name,
+    adSoyad: customerName,
+    tcno: customerTc,
+    telefon: customerPhone,
+    giris: formatTR(document.getElementById("startDate").value),
+    cikis: formatTR(document.getElementById("endDate").value),
+    gece: data.nights,
+    toplam: data.total,
+    kapora: data.deposit,
+    kalan: data.remaining,
+    not: document.getElementById("note").value.trim()
   };
 
   await fetch(API,{
@@ -192,7 +199,9 @@ async function saveReservation(){
   });
 
   alert("Kaydedildi ✅");
+  loadReservations();
 }
+
 
 function escapeHtml(str = "") {
   return String(str)

@@ -611,7 +611,7 @@ function getBookedMap(villa) {
         }
 
         villas = await response.json();
-await loadReservations();
+//await loadReservations();
 
         if (!Array.isArray(villas) || villas.length === 0) {
           throw new Error("Villa verisi bulunamadı.");

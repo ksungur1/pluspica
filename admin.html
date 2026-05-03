@@ -140,8 +140,274 @@ async function saveReservation(){
   alert("Kaydedildi ✅");
 }
 
-function createPDF(){
-  window.print();
+function escapeHtml(str = "") {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function createPDF() {
+  const data = calc();
+  if (!data) {
+    alert("Lütfen tarihleri seçin.");
+    return;
+  }
+
+  const villa = villas[villaSelect.value];
+  const rezNo = reservationNo();
+  const createdAt = new Date().toLocaleString("tr-TR");
+
+  const html = `
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Rezervasyon Formu</title>
+<style>
+@page { size: A4; margin: 12mm; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #0f172a;
+}
+.sheet {
+  border: 1px solid #dbe3ef;
+  border-radius: 18px;
+  overflow: hidden;
+}
+.topbar {
+  background: #1e3470;
+  color: white;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.brand img {
+  height: 95px;
+  width: auto;
+}
+.brand h1 {
+  margin: 0;
+  font-size: 24px;
+}
+.brand p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  opacity: .9;
+}
+.meta {
+  text-align: right;
+  font-size: 12px;
+}
+.meta strong {
+  display: block;
+  font-size: 14px;
+  margin-top: 4px;
+}
+.content {
+  padding: 20px 22px;
+}
+.title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 14px;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 18px 0 10px;
+}
+.box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.grid3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.label {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 5px;
+}
+.value {
+  font-size: 15px;
+  font-weight: 600;
+}
+.villa {
+  font-size: 22px;
+  font-weight: 700;
+}
+.total {
+  margin-top: 12px;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.total .value {
+  color: #166534;
+  font-size: 28px;
+  font-weight: 800;
+}
+.note {
+  min-height: 65px;
+  white-space: pre-wrap;
+}
+.signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-top: 26px;
+}
+.sign {
+  border-top: 1px solid #94a3b8;
+  padding-top: 7px;
+  text-align: center;
+  font-size: 12px;
+  color: #475569;
+}
+.footer {
+  margin-top: 14px;
+  font-size: 11px;
+  color: #64748b;
+  font-style: italic;
+}
+@media print {
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="topbar">
+    <div class="brand">
+      <img src="logo.png">
+      <div>
+        <h1>Rezervasyon Formu</h1>
+        <p>PlusPica</p>
+      </div>
+    </div>
+    <div class="meta">
+      <div>Rezervasyon No</div>
+      <strong>${escapeHtml(rezNo)}</strong>
+      <br>
+      <div>Oluşturma Tarihi</div>
+      <strong>${escapeHtml(createdAt)}</strong>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="title">Rezervasyon Detayları</div>
+
+    <div class="box">
+      <div class="label">Villa</div>
+      <div class="villa">${escapeHtml(villa.name)}</div>
+    </div>
+
+    <div class="section-title">Müşteri Bilgileri</div>
+    <div class="grid">
+      <div class="box">
+        <div class="label">Ad Soyad</div>
+        <div class="value">${escapeHtml(name.value)}</div>
+      </div>
+      <div class="box">
+        <div class="label">Telefon</div>
+        <div class="value">${escapeHtml(phone.value)}</div>
+      </div>
+      <div class="box">
+        <div class="label">T.C. Kimlik No</div>
+        <div class="value">${escapeHtml(tcno.value || "-")}</div>
+      </div>
+      <div class="box">
+        <div class="label">Belge Tipi</div>
+        <div class="value">Rezervasyon Ön Hazırlık Formu</div>
+      </div>
+    </div>
+
+    <div class="section-title">Konaklama Bilgileri</div>
+    <div class="grid">
+      <div class="box">
+        <div class="label">Giriş Tarihi</div>
+        <div class="value">${escapeHtml(formatTR(startDate.value))}</div>
+      </div>
+      <div class="box">
+        <div class="label">Çıkış Tarihi</div>
+        <div class="value">${escapeHtml(formatTR(endDate.value))}</div>
+      </div>
+      <div class="box">
+        <div class="label">Gece Sayısı</div>
+        <div class="value">${data.nights} gece</div>
+      </div>
+      <div class="box">
+        <div class="label">Gecelik Ortalama</div>
+        <div class="value">${escapeHtml(formatMoney(Math.round(data.total / data.nights)))}</div>
+      </div>
+    </div>
+
+    <div class="total">
+      <div class="label">Toplam Tutar</div>
+      <div class="value">${escapeHtml(formatMoney(data.total))}</div>
+    </div>
+
+    <div class="section-title">Ödeme Bilgileri</div>
+    <div class="grid3">
+      <div class="box">
+        <div class="label">Toplam Konaklama Bedeli</div>
+        <div class="value">${escapeHtml(formatMoney(data.total))}</div>
+      </div>
+      <div class="box">
+        <div class="label">Kapora</div>
+        <div class="value">${escapeHtml(formatMoney(data.deposit))}</div>
+      </div>
+      <div class="box">
+        <div class="label">Kalan Ödeme</div>
+        <div class="value">${escapeHtml(formatMoney(data.remaining))}</div>
+      </div>
+    </div>
+
+    <div class="section-title">Notlar</div>
+    <div class="box note">${escapeHtml(note.value || "Not girilmedi.")}</div>
+
+    <div class="signatures">
+      <div class="sign">Müşteri İmzası</div>
+      <div class="sign">Yetkili İmzası</div>
+    </div>
+
+    <div class="footer">Bu belge PlusPica rezervasyon ön hazırlık formudur.</div>
+  </div>
+</div>
+</body>
+</html>
+`;
+
+  const w = window.open("", "_blank");
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+
+  w.onload = () => {
+    w.focus();
+    setTimeout(() => w.print(), 500);
+  };
 }
 
 document.querySelectorAll("input,select").forEach(el=>{

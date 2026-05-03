@@ -59,15 +59,38 @@
 
   let html = "";
 
-  data.reverse().forEach(r => {
-    html += `
-      <div class="border p-3 mb-2 rounded">
-        <b>${r["Ad Soyad"]}</b> - ${r["Villa"]}<br>
-        ${r["Giriş Tarihi"]} → ${r["Çıkış Tarihi"]}<br>
-        ${r["Toplam Tutar"]}
+data.reverse().forEach(r => {
+  html += `
+    <div class="bg-white border rounded-xl p-4 mb-3 shadow-sm">
+
+      <div class="flex justify-between items-center mb-2">
+        <div class="font-bold text-lg">${r["Ad Soyad"]}</div>
+        <div class="text-sm text-gray-500">${r["Rezervasyon No"]}</div>
       </div>
-    `;
-  });
+
+      <div class="text-sm text-gray-600 mb-1">
+        🏡 ${r["Villa"]}
+      </div>
+
+      <div class="text-sm text-gray-600 mb-2">
+        📅 ${r["Giriş Tarihi"]} → ${r["Çıkış Tarihi"]}
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 text-sm">
+        <div class="bg-gray-100 p-2 rounded">
+          💰 ${r["Toplam Tutar"]} ₺
+        </div>
+        <div class="bg-gray-100 p-2 rounded">
+          💵 ${r["Kapora"]} ₺
+        </div>
+        <div class="bg-gray-100 p-2 rounded">
+          🧾 ${r["Kalan Ödeme"]} ₺
+        </div>
+      </div>
+
+    </div>
+  `;
+});
 
   document.getElementById("list").innerHTML = html;
 }

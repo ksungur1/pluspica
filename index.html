@@ -64,10 +64,29 @@
     .replace(/\s+/g, "")
     .trim();
 }
-    function getVal(r, keys) {
-  for (const key of keys) {
-    if (r[key] !== undefined && r[key] !== "") return r[key];
+   function cleanKey(str = "") {
+  return String(str)
+    .toLowerCase()
+    .replaceAll("ı", "i")
+    .replaceAll("ğ", "g")
+    .replaceAll("ü", "u")
+    .replaceAll("ş", "s")
+    .replaceAll("ö", "o")
+    .replaceAll("ç", "c")
+    .replaceAll(".", "")
+    .replace(/\s+/g, "");
+}
+
+function getVal(row, possibleKeys) {
+  const rowKeys = Object.keys(row);
+
+  for (const wanted of possibleKeys) {
+    const foundKey = rowKeys.find(k => cleanKey(k) === cleanKey(wanted));
+    if (foundKey && row[foundKey] !== undefined && row[foundKey] !== "") {
+      return row[foundKey];
+    }
   }
+
   return "";
 }
 
@@ -116,9 +135,9 @@ function getBookedDatesFromReservations(villa) {
   const booked = new Set();
 
   reservations.forEach(r => {
-    const villaName = getVal(r, ["Villa", "villa"]);
-    const giris = getVal(r, ["Giriş Tarihi", "giris"]);
-    const cikis = getVal(r, ["Çıkış Tarihi", "cikis"]);
+    const villaName = getVal(r, ["Villa"]);
+    const giris = getVal(r, ["Giriş Tarihi", "Giris Tarihi", "giris"]);
+    const cikis = getVal(r, ["Çıkış Tarihi", "Cikis Tarihi", "cikis"]);
 
     if (normalizeVillaName(villaName) !== normalizeVillaName(villa.name)) return;
 
@@ -138,7 +157,6 @@ function getBookedDatesFromReservations(villa) {
   console.log(villa.name, "dolu günler:", Array.from(booked));
   return Array.from(booked);
 }
-
 async function loadReservations() {
   try {
     const res = await fetch(RESERVATION_API, { cache: "no-store" });

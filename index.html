@@ -50,6 +50,74 @@
     const days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"];
 
     let villas = [];
+    const RESERVATION_API = "https://script.google.com/macros/s/AKfycbz0So0p3eadwSXBlE2TsvoQjmVbiW0lLzWPf_HGOLQwtWY4DmycdXm-1UaawINS3Ed5QA/exec";
+    let reservations = [];
+    function normalizeVillaName(name = "") {
+  return String(name)
+    .toLowerCase()
+    .replaceAll("ı", "i")
+    .replaceAll("ü", "u")
+    .replaceAll("ö", "o")
+    .replaceAll("ç", "c")
+    .replaceAll("ş", "s")
+    .replaceAll("ğ", "g")
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function parseTRDate(value) {
+  if (!value) return null;
+
+  // 09.05.2026 gibi tarihleri okur
+  if (String(value).includes(".")) {
+    const [day, month, year] = String(value).split(".").map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  // Google Sheet bazen ISO tarih döndürebilir
+  const d = new Date(value);
+  return isNaN(d) ? null : d;
+}
+
+function toLocalISO(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function getBookedDatesFromReservations(villa) {
+  const booked = new Set();
+
+  reservations.forEach(r => {
+    if (normalizeVillaName(r["Villa"]) !== normalizeVillaName(villa.name)) return;
+
+    const start = parseTRDate(r["Giriş Tarihi"]);
+    const end = parseTRDate(r["Çıkış Tarihi"]);
+
+    if (!start || !end) return;
+
+    const current = new Date(start);
+
+    // Çıkış günü dolu sayılmaz, geceleme günleri dolu sayılır
+    while (current < end) {
+      booked.add(toLocalISO(current));
+      current.setDate(current.getDate() + 1);
+    }
+  });
+
+  return Array.from(booked);
+}
+
+async function loadReservations() {
+  try {
+    const res = await fetch(RESERVATION_API, { cache: "no-store" });
+    reservations = await res.json();
+  } catch (err) {
+    console.error("Rezervasyonlar yüklenemedi:", err);
+    reservations = [];
+  }
+}
     let selectedVilla = null;
     let selectedImageIndex = 0;
     let startDate = null;
@@ -88,16 +156,22 @@
       return getNightPrice(villa, visibleMonth + 1);
     }
 
-    function getBookedMap(villa) {
-      const map = {};
-      (villa.bookedDates || []).forEach((date) => {
-        const monthNum = parseISO(date).getMonth() + 1;
-        map[date] = {
-          status: "dolu",
-          price: getNightPrice(villa, monthNum)
-        };
-      });
-      return map;
+function getBookedMap(villa) {
+  const map = {};
+
+  const jsonBookedDates = villa.bookedDates || [];
+  const sheetBookedDates = getBookedDatesFromReservations(villa);
+
+  [...jsonBookedDates, ...sheetBookedDates].forEach((date) => {
+    const monthNum = parseISO(date).getMonth() + 1;
+    map[date] = {
+      status: "dolu",
+      price: getNightPrice(villa, monthNum)
+    };
+  });
+
+  return map;
+}
     }
 
     function nightsBetween(startIso, endIso) {
@@ -537,6 +611,7 @@
         }
 
         villas = await response.json();
+await loadReservations();
 
         if (!Array.isArray(villas) || villas.length === 0) {
           throw new Error("Villa verisi bulunamadı.");

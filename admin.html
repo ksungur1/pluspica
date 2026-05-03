@@ -108,6 +108,12 @@ function prettyDate(value) {
   if (isNaN(d)) return value;
   return d.toLocaleDateString("tr-TR");
 }
+  function formatTR(value) {
+  if (!value) return "-";
+  const d = parseDate(value);
+  if (isNaN(d)) return value;
+  return d.toLocaleDateString("tr-TR");
+}
 
 function formatMoney(v){
   return Number(v).toLocaleString("tr-TR")+" ₺";

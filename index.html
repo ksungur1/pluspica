@@ -64,6 +64,32 @@
     .replace(/\s+/g, "")
     .trim();
 }
+    function getVal(r, keys) {
+  for (const key of keys) {
+    if (r[key] !== undefined && r[key] !== "") return r[key];
+  }
+  return "";
+}
+
+function parseReservationDate(value) {
+  if (!value) return null;
+
+  const str = String(value).trim();
+
+  if (str.includes(".")) {
+    const [day, month, year] = str.split(".").map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  if (str.includes("-") && str.length >= 10) {
+    const onlyDate = str.slice(0, 10);
+    const [year, month, day] = onlyDate.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  const d = new Date(str);
+  return isNaN(d) ? null : d;
+}
 
 function parseTRDate(value) {
   if (!value) return null;
@@ -90,22 +116,26 @@ function getBookedDatesFromReservations(villa) {
   const booked = new Set();
 
   reservations.forEach(r => {
-    if (normalizeVillaName(r["Villa"]) !== normalizeVillaName(villa.name)) return;
+    const villaName = getVal(r, ["Villa", "villa"]);
+    const giris = getVal(r, ["Giriş Tarihi", "giris"]);
+    const cikis = getVal(r, ["Çıkış Tarihi", "cikis"]);
 
-    const start = parseTRDate(r["Giriş Tarihi"]);
-    const end = parseTRDate(r["Çıkış Tarihi"]);
+    if (normalizeVillaName(villaName) !== normalizeVillaName(villa.name)) return;
+
+    const start = parseReservationDate(giris);
+    const end = parseReservationDate(cikis);
 
     if (!start || !end) return;
 
     const current = new Date(start);
 
-    // Çıkış günü dolu sayılmaz, geceleme günleri dolu sayılır
     while (current < end) {
       booked.add(toLocalISO(current));
       current.setDate(current.getDate() + 1);
     }
   });
 
+  console.log(villa.name, "dolu günler:", Array.from(booked));
   return Array.from(booked);
 }
 

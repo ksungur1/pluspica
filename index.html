@@ -663,6 +663,38 @@ villas = await response.json();
 await loadReservations();
 
 console.log("Rezervasyonlar:", reservations);
+        function tarihFormatla(tarih) {
+  const d = new Date(tarih);
+  const yil = d.getFullYear();
+  const ay = String(d.getMonth() + 1).padStart(2, '0');
+  const gun = String(d.getDate()).padStart(2, '0');
+  return `${yil}-${ay}-${gun}`;
+}
+
+const villaDoluGunleri = {};
+
+reservations.forEach(r => {
+  const villa = r["Villa"];
+  const giris = r["Giriş Tarihi"];
+  const cikis = r["Çıkış Tarihi"];
+
+  if (!villa || !giris || !cikis) return;
+
+  const baslangic = new Date(giris);
+  const bitis = new Date(cikis);
+
+  for (let d = new Date(baslangic); d <= bitis; d.setDate(d.getDate() + 1)) {
+    const gun = tarihFormatla(d);
+
+    if (!villaDoluGunleri[villa]) {
+      villaDoluGunleri[villa] = [];
+    }
+
+    villaDoluGunleri[villa].push(gun);
+  }
+});
+
+console.log("DOLU GÜNLER:", villaDoluGunleri);
 
         if (!Array.isArray(villas) || villas.length === 0) {
           throw new Error("Villa verisi bulunamadı.");
@@ -683,6 +715,13 @@ console.log("Rezervasyonlar:", reservations);
       renderVillaList();
       renderSelectedSection();
     }
+    function tarihFormatla(tarih) {
+  const d = new Date(tarih);
+  const yil = d.getFullYear();
+  const ay = String(d.getMonth() + 1).padStart(2, '0');
+  const gun = String(d.getDate()).padStart(2, '0');
+  return `${yil}-${ay}-${gun}`;
+}
 
     loadVillas();
   </script>

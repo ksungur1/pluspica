@@ -52,6 +52,7 @@
     let villas = [];
     const RESERVATION_API = "https://script.google.com/macros/s/AKfycbz0So0p3eadwSXBlE2TsvoQjmVbiW0lLzWPf_HGOLQwtWY4DmycdXm-1UaawINS3Ed5QA/exec";
     let reservations = [];
+    let villaDoluGunleri = {};
     function normalizeVillaName(name = "") {
   return String(name)
     .toLowerCase()
@@ -136,11 +137,11 @@ function getBookedDatesFromReservations(villa) {
     key => normalizeVillaName(key) === normalizeVillaName(villa.name)
   );
 
-  return villaKey ? villaDoluGunleri[villaKey] : [];
-}
+  const result = villaKey ? villaDoluGunleri[villaKey] : [];
 
-  console.log(villa.name, "dolu günler:", Array.from(booked));
-  return Array.from(booked);
+  console.log(villa.name, "takvime giden dolu günler:", result);
+
+  return result;
 }
 async function loadReservations() {
   try {
@@ -656,7 +657,7 @@ console.log("Rezervasyonlar:", reservations);
   return `${yil}-${ay}-${gun}`;
 }
 
-const villaDoluGunleri = {};
+villaDoluGunleri = {};
 
 reservations.forEach(r => {
   const villa = r["Villa"];

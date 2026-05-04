@@ -132,27 +132,12 @@ function toLocalISO(date) {
 }
 
 function getBookedDatesFromReservations(villa) {
-  const booked = new Set();
+  const villaKey = Object.keys(villaDoluGunleri).find(
+    key => normalizeVillaName(key) === normalizeVillaName(villa.name)
+  );
 
-  reservations.forEach(r => {
-    const villaName = getVal(r, ["Villa"]);
-    const giris = getVal(r, ["Giriş Tarihi", "Giris Tarihi", "giris"]);
-    const cikis = getVal(r, ["Çıkış Tarihi", "Cikis Tarihi", "cikis"]);
-
-    if (normalizeVillaName(villaName) !== normalizeVillaName(villa.name)) return;
-
-    const start = parseReservationDate(giris);
-    const end = parseReservationDate(cikis);
-
-    if (!start || !end) return;
-
-    const current = new Date(start);
-
-    while (current < end) {
-      booked.add(toLocalISO(current));
-      current.setDate(current.getDate() + 1);
-    }
-  });
+  return villaKey ? villaDoluGunleri[villaKey] : [];
+}
 
   console.log(villa.name, "dolu günler:", Array.from(booked));
   return Array.from(booked);
